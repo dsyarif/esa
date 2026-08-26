@@ -17,7 +17,7 @@ Dibangun sebagai **single-file HTML** — tidak perlu instalasi, tidak perlu ser
 
 ## Cara Pakai
 
-1. Buka `esa.html` di browser (Chrome/Edge disarankan untuk fitur lengkap)
+1. Buka `https://esa-beta.vercel.app` di browser (Chrome/Edge disarankan untuk fitur lengkap)
 2. Pilih **tanggal kegiatan** — nomor urut berikutnya otomatis tersarankan
 3. *(Opsional tapi disarankan)* Klik **Atur Folder Unduhan** dan pilih folder tujuan — sekali saja, akan diingat untuk sesi berikutnya
 4. Ambil bukti lewat **Tempel (Ctrl+V)**, **Upload File**, atau **Ambil dari Layar**
