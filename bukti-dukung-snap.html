@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESA — E-Kinerja Screenshot Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg-0:#0f0a1c;
+    --bg-1:#170f2b;
+    --panel:#1d1436;
+    --panel-2:#241a42;
+    --line:#352a58;
+    --violet:#8b5cf6;
+    --violet-2:#a78bfa;
+    --violet-dim:#6d4fc9;
+    --pink:#e879b9;
+    --text:#f1edfb;
+    --text-dim:#b4a9d6;
+    --text-faint:#7c6fa0;
+    --good:#4ade80;
+    --warn:#fbbf24;
+    --bad:#f87171;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(139,92,246,0.18), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(232,121,185,0.10), transparent 55%),
+      var(--bg-0);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding:32px 20px 80px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+  header{margin-bottom:28px;}
+  .eyebrow{
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--violet-2);font-weight:600;margin-bottom:8px;
+  }
+  .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(28px,4vw,36px);
+    margin:0 0 6px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    background:linear-gradient(135deg, var(--text), var(--violet-2));
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .full-name{font-size:14px;color:var(--text-faint);font-weight:500;}
+  .sub{color:var(--text-dim);font-size:14.5px;line-height:1.5;max-width:65ch;margin-top:4px;}
+
+  .panel{
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:20px;
+  }
+  .panel-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:14px;font-weight:600;color:var(--text);
+    display:flex;align-items:center;gap:8px;margin-bottom:14px;
+  }
+  .panel-title .n{
+    width:20px;height:20px;border-radius:6px;
+    background:rgba(139,92,246,0.18);color:var(--violet-2);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;
+  }
+
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  label{font-size:12px;color:var(--text-dim);font-weight:500;}
+  input[type=date], input[type=text], input[type=time], input[type=number]{
+    background:var(--bg-1);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:9px;
+    padding:9px 11px;
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+    outline:none;
+  }
+  input[type=date]:focus, input[type=text]:focus, input[type=time]:focus, input[type=number]:focus{border-color:var(--violet);}
+  input[type=number]{width:64px;}
+
+  .seq-preview{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;font-size:14px;
+    color:var(--violet-2);
+    background:rgba(139,92,246,0.12);
+    border:1px solid rgba(139,92,246,0.3);
+    border-radius:9px;padding:9px 14px;
+  }
+
+  .btn{
+    appearance:none;border:none;cursor:pointer;
+    font-family:'Inter',sans-serif;font-weight:600;font-size:13.5px;
+    padding:10px 16px;border-radius:9px;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:transform .12s ease, filter .12s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{
+    background:linear-gradient(135deg, var(--violet), var(--violet-dim));
+    color:white;
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{
+    background:var(--bg-1);
+    color:var(--text);
+    border:1px solid var(--line);
+  }
+  .btn-ghost:hover{border-color:var(--violet-dim);}
+  .btn-danger{background:rgba(248,113,113,0.12);color:var(--bad);border:1px solid rgba(248,113,113,0.3);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-copy{
+    background:transparent;border:1px solid var(--line);color:var(--text-faint);
+    padding:3px 7px;border-radius:6px;font-size:11px;cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .btn-copy:hover{border-color:var(--violet);color:var(--violet-2);}
+
+  #dropzone{
+    border:1.5px dashed var(--line);
+    border-radius:12px;
+    padding:24px;
+    text-align:center;
+    color:var(--text-faint);
+    font-size:13.5px;
+    margin-top:14px;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  #dropzone.drag{border-color:var(--violet);background:rgba(139,92,246,0.06);color:var(--text-dim);}
+  #dropzone b{color:var(--text-dim);}
+
+  .capture-live{
+    margin-top:14px;display:none;
+    border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;background:#000;
+  }
+  .capture-live video{width:100%;display:block;max-height:260px;object-fit:contain;background:#000;}
+  .capture-live .bar{
+    display:flex;gap:8px;justify-content:center;padding:10px;
+    background:var(--bg-1);border-top:1px solid var(--line);
+  }
+
+  .hint{font-size:12px;color:var(--text-faint);margin-top:10px;line-height:1.5;}
+
+  .folder-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .folder-label{
+    font-size:13px;color:var(--text-dim);
+    background:var(--bg-1);border:1px solid var(--line);
+    border-radius:9px;padding:9px 13px;flex:1;min-width:200px;
+  }
+  .folder-label.set{color:var(--good);border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.06);}
+  .folder-label.pending{color:var(--warn);border-color:rgba(251,191,36,0.35);background:rgba(251,191,36,0.06);}
+
+  .folder-files{margin-top:14px;}
+  .folder-files-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .folder-files-head span{font-size:12.5px;color:var(--text-dim);font-weight:500;}
+  .file-table{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;}
+  .file-head-row, .file-row{
+    display:grid;
+    grid-template-columns:56px 84px 84px 1fr 56px;
+    gap:8px;align-items:center;
+  }
+  .file-head-row{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--text-faint);padding:0 12px;font-weight:600;
+  }
+  .file-row{
+    background:var(--bg-1);border:1px solid var(--line);
+    border-radius:8px;padding:8px 12px;font-size:12.5px;
+  }
+  .file-row .col-no{color:var(--violet-2);font-weight:700;font-family:'Space Grotesk',sans-serif;}
+  .file-row .col-time, .file-row .col-title{display:flex;align-items:center;gap:5px;overflow:hidden;}
+  .file-row .col-time span, .file-row .col-title span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-row .col-ext{color:var(--text-faint);font-size:11px;text-transform:uppercase;}
+  .file-empty{font-size:13px;color:var(--text-faint);padding:10px 2px;}
+
+  .grid{display:flex;flex-direction:column;gap:12px;}
+  .item{
+    display:flex;gap:14px;
+    background:var(--bg-1);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px;
+  }
+  .thumb{
+    width:110px;height:78px;flex:none;border-radius:8px;overflow:hidden;
+    background:#000;border:1px solid var(--line);
+  }
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .item-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+  .item-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .seq-edit{display:flex;align-items:center;gap:4px;}
+  .seq-edit .day-part{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13.5px;color:var(--violet-2);
+  }
+  .time-row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;}
+  .time-row .field{gap:3px;}
+  .time-row label{font-size:10.5px;}
+  .hm-group{display:flex;align-items:center;gap:4px;}
+  .hm-group input[type=number]{width:48px;text-align:center;padding:9px 6px;}
+  .hm-group span{color:var(--text-faint);font-weight:600;}
+  .time-warn .hm-group input{border-color:var(--warn);}
+  .size-tag{
+    font-size:11.5px;padding:3px 8px;border-radius:20px;font-weight:600;white-space:nowrap;
+  }
+  .size-ok{background:rgba(74,222,128,0.12);color:var(--good);}
+  .size-warn{background:rgba(251,191,36,0.12);color:var(--warn);}
+  .size-processing{background:rgba(139,92,246,0.12);color:var(--violet-2);}
+  .item input[type=text]{width:100%;}
+  .item-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .item-actions .btn{padding:7px 12px;font-size:12.5px;}
+
+  .saved-tag{font-size:11px;color:var(--good);font-weight:600;}
+
+  .empty{
+    text-align:center;padding:40px 20px;color:var(--text-faint);font-size:14px;
+  }
+
+  footer.actions{
+    position:sticky;bottom:16px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 18px;
+    margin-top:20px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.35);
+  }
+  footer.actions .count{font-size:13px;color:var(--text-dim);}
+  footer.actions .count b{color:var(--text);}
+
+  ::selection{background:rgba(139,92,246,0.35);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">e-Kinerja · Bukti Dukung</div>
+    <div class="brand">
+      <h1>ESA</h1>
+      <span class="full-name">E-Kinerja Screenshot Assistant</span>
+    </div>
+    <p class="sub">Tempel, upload, atau ambil screenshot — otomatis dinamai per tanggal, dilengkapi jam kegiatan dan judul, lalu dikompres di bawah 500&nbsp;KB. Semua diproses langsung di browser kamu, tidak diunggah ke server mana pun.</p>
+  </header>
+
+  <div class="panel">
+    <div class="panel-title"><span class="n">1</span>Tanggal Kegiatan</div>
+    <div class="row">
+      <div class="field">
+        <label for="dateInput">Tanggal</label>
+        <input type="date" id="dateInput">
+      </div>
+      <div class="field">
+        <label>Nomor berikutnya (saran)</label>
+        <div class="seq-preview" id="seqPreview">—</div>
+      </div>
+    </div>
+    <p class="hint">Nomor ini otomatis dihitung dari nomor tertinggi yang sudah ada di folder unduhan + sesi berjalan untuk tanggal ini — jadi tetap aman meski ada kegiatan yang belum sempat di-screenshot (misal 25.1 masih kosong tapi 25.2 sudah ada). Nomor tiap item tetap bisa kamu ubah manual di kartu masing-masing.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><span class="n">2</span>Lokasi Unduhan</div>
+    <div class="folder-row">
+      <button class="btn btn-ghost" id="btnChooseFolder">📂 Atur Folder Unduhan</button>
+      <span class="folder-label" id="folderLabel">Belum diatur — unduhan akan memakai folder default browser (biasanya langsung tanpa dialog)</span>
+      <button class="btn btn-danger" id="btnClearFolder" style="display:none;">Lepas Folder</button>
+    </div>
+    <p class="hint">Sekali diatur, folder ini <b>diingat otomatis</b> walau halaman di-refresh atau ditutup — tidak perlu pilih ulang tiap kali buka ESA. Fitur ini hanya didukung Chrome/Edge; di browser lain file tetap terunduh ke folder Downloads default.</p>
+
+    <div class="folder-files" id="folderFilesSection" style="display:none;">
+      <div class="folder-files-head">
+        <span id="folderFilesCount">Isi folder</span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" id="btnExportExcel" style="padding:6px 12px;font-size:12px;">📊 Export Excel</button>
+          <button class="btn btn-ghost" id="btnRefreshFolder" style="padding:6px 12px;font-size:12px;">🔄 Muat Ulang</button>
+        </div>
+      </div>
+      <div class="file-head-row">
+        <span>No.</span><span>Mulai</span><span>Selesai</span><span>Judul Kegiatan</span><span>Ext</span>
+      </div>
+      <div class="file-table" id="fileList"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><span class="n">3</span>Ambil Bukti</div>
+    <div class="row">
+      <button class="btn btn-primary" id="btnScreenCapture">🖥️ Ambil dari Layar</button>
+      <button class="btn btn-ghost" id="btnUpload">📁 Upload File</button>
+      <input type="file" id="fileInput" accept="image/*" multiple hidden>
+    </div>
+
+    <div id="dropzone">
+      Tekan <b>Ctrl+V</b> di mana saja pada halaman ini untuk menempel screenshot dari clipboard — atau seret file gambar ke sini.
+    </div>
+
+    <div class="capture-live" id="captureLive">
+      <video id="liveVideo" autoplay muted></video>
+      <div class="bar">
+        <button class="btn btn-primary" id="btnGrab">📸 Ambil Gambar</button>
+        <button class="btn btn-ghost" id="btnStopCapture">Selesai</button>
+      </div>
+    </div>
+
+    <p class="hint">Catatan: "Ambil dari Layar" memakai izin berbagi layar browser — di beberapa tempat preview mungkin dibatasi. Kalau gagal atau ditolak, gunakan Tempel (Ctrl+V) atau Upload sebagai cara paling stabil.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title"><span class="n">4</span>Daftar Bukti Dukung</div>
+    <div class="grid" id="itemsGrid">
+      <div class="empty" id="emptyState">Belum ada bukti dukung. Tempel, upload, atau ambil screenshot di atas.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="actions">
+  <div class="count"><b id="itemCount">0</b> bukti siap diunduh</div>
+  <div style="display:flex;gap:10px;">
+    <button class="btn btn-danger" id="btnClearAll">Hapus Semua</button>
+    <button class="btn btn-primary" id="btnDownloadAll" disabled>⬇️ Unduh Semua</button>
+  </div>
+</footer>
+
+<script>
+const MAX_BYTES = 500 * 1024; // 500 KB
+const DB_NAME = 'esa-store';
+const STORE_NAME = 'kv';
+const FOLDER_KEY = 'downloadDir';
+
+const dateInput = document.getElementById('dateInput');
+const seqPreview = document.getElementById('seqPreview');
+const itemsGrid = document.getElementById('itemsGrid');
+const emptyState = document.getElementById('emptyState');
+const itemCount = document.getElementById('itemCount');
+const btnDownloadAll = document.getElementById('btnDownloadAll');
+const btnClearAll = document.getElementById('btnClearAll');
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const btnUpload = document.getElementById('btnUpload');
+const btnScreenCapture = document.getElementById('btnScreenCapture');
+const captureLive = document.getElementById('captureLive');
+const liveVideo = document.getElementById('liveVideo');
+const btnGrab = document.getElementById('btnGrab');
+const btnStopCapture = document.getElementById('btnStopCapture');
+const btnChooseFolder = document.getElementById('btnChooseFolder');
+const btnClearFolder = document.getElementById('btnClearFolder');
+const folderLabel = document.getElementById('folderLabel');
+const folderFilesSection = document.getElementById('folderFilesSection');
+const folderFilesCount = document.getElementById('folderFilesCount');
+const fileList = document.getElementById('fileList');
+const btnRefreshFolder = document.getElementById('btnRefreshFolder');
+const btnExportExcel = document.getElementById('btnExportExcel');
+
+let entries = []; // {id, blob, url, day, seq, title, startTime, endTime, sizeBytes, processing, savedToFolder}
+let idCounter = 0;
+let mediaStream = null;
+let downloadDirHandle = null;
+let pendingHandle = null;
+let folderFilesCache = []; // parsed records dari folder aktif
+
+function todayStr(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+dateInput.value = todayStr();
+
+function selectedDay(){
+  const v = dateInput.value;
+  if(!v) return null;
+  return parseInt(v.split('-')[2], 10);
+}
+
+function getMaxSeqForDay(day){
+  let max = 0;
+  entries.forEach(e => { if(e.day === day && e.seq > max) max = e.seq; });
+  folderFilesCache.forEach(f => { if(f.day === day && f.seq > max) max = f.seq; });
+  return max;
+}
+
+function updateSeqPreview(){
+  const day = selectedDay();
+  if(day === null){ seqPreview.textContent = '—'; return; }
+  seqPreview.textContent = `${day}.${getMaxSeqForDay(day) + 1}`;
+}
+dateInput.addEventListener('change', updateSeqPreview);
+updateSeqPreview();
+
+function fmtSize(bytes){
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' KB';
+  return (bytes/(1024*1024)).toFixed(2) + ' MB';
+}
+function sanitize(name){
+  return name.replace(/[\\\/:*?"<>|·]/g, '-').trim() || 'Tanpa Judul';
+}
+function fmtTimeForFile(t){
+  return t ? t.replace(':', '.') : '--.--';
+}
+function pad2(n){ return String(n).padStart(2, '0'); }
+function combineTime(h, m){
+  if(h === '' || h === undefined || m === '' || m === undefined) return '';
+  return `${pad2(h)}:${pad2(m)}`;
+}
+function updateTimeWarnUI(entry, fromInput){
+  const row = fromInput.closest('.time-row');
+  if(!row) return;
+  const warn = entry.startTime && entry.endTime && entry.endTime <= entry.startTime;
+  row.classList.toggle('time-warn', !!warn);
+}
+
+async function compressImage(blob, maxBytes){
+  const bitmap = await createImageBitmap(blob);
+  let scale = 1;
+  let quality = 0.9;
+  let result = blob;
+  let attempts = 0;
+  while(attempts < 24){
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    result = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+    if(result.size <= maxBytes) break;
+    if(quality > 0.35){ quality -= 0.07; }
+    else { scale *= 0.85; }
+    attempts++;
+  }
+  bitmap.close && bitmap.close();
+  return result;
+}
+
+function renderItems(){
+  itemsGrid.querySelectorAll('.item').forEach(el => el.remove());
+  emptyState.style.display = entries.length ? 'none' : 'block';
+
+  entries.forEach(entry => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    const sizeClass = entry.processing ? 'size-processing'
+      : entry.sizeBytes <= MAX_BYTES ? 'size-ok' : 'size-warn';
+    const sizeLabel = entry.processing ? 'mengompres…' : fmtSize(entry.sizeBytes);
+    const savedTag = entry.savedToFolder ? '<span class="saved-tag">✓ tersimpan ke folder</span>' : '';
+    const timeWarn = (entry.startTime && entry.endTime && entry.endTime <= entry.startTime) ? 'time-warn' : '';
+
+    el.innerHTML = `
+      <div class="thumb"><img src="${entry.url}"></div>
+      <div class="item-body">
+        <div class="item-top">
+          <div class="seq-edit">
+            <span class="day-part">${entry.day}.</span>
+            <input type="number" min="1" class="seqInput" data-id="${entry.id}" value="${entry.seq}">
+          </div>
+          <span class="size-tag ${sizeClass}">${sizeLabel}</span>
+        </div>
+        <div class="time-row ${timeWarn}">
+          <div class="field">
+            <label>Jam Mulai</label>
+            <div class="hm-group">
+              <input type="number" min="0" max="23" placeholder="jj" class="startH" data-id="${entry.id}" value="${entry.startH}">
+              <span>:</span>
+              <input type="number" min="0" max="59" placeholder="mm" class="startM" data-id="${entry.id}" value="${entry.startM}">
+            </div>
+          </div>
+          <div class="field">
+            <label>Jam Selesai</label>
+            <div class="hm-group">
+              <input type="number" min="0" max="23" placeholder="jj" class="endH" data-id="${entry.id}" value="${entry.endH}">
+              <span>:</span>
+              <input type="number" min="0" max="59" placeholder="mm" class="endM" data-id="${entry.id}" value="${entry.endM}">
+            </div>
+          </div>
+        </div>
+        <input type="text" placeholder="Judul kegiatan…" value="${entry.title.replace(/"/g,'&quot;')}" data-id="${entry.id}" class="titleInput">
+        <div class="item-actions">
+          <button class="btn btn-ghost btnDownloadOne" data-id="${entry.id}">⬇️ Unduh</button>
+          <button class="btn btn-danger btnRemove" data-id="${entry.id}">Hapus</button>
+          ${savedTag}
+        </div>
+      </div>
+    `;
+    itemsGrid.appendChild(el);
+  });
+
+  itemCount.textContent = entries.length;
+  btnDownloadAll.disabled = entries.length === 0;
+
+  itemsGrid.querySelectorAll('.titleInput').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const entry = entries.find(x => x.id === Number(e.target.dataset.id));
+      if(entry) entry.title = e.target.value;
+    });
+  });
+  itemsGrid.querySelectorAll('.seqInput').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const entry = entries.find(x => x.id === Number(e.target.dataset.id));
+      if(entry){
+        const v = parseInt(e.target.value, 10);
+        entry.seq = isNaN(v) || v < 1 ? 1 : v;
+      }
+    });
+  });
+  itemsGrid.querySelectorAll('.startH').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const entry = entries.find(x => x.id === Number(e.target.dataset.id));
+      if(entry){ entry.startH = e.target.value; entry.startTime = combineTime(entry.startH, entry.startM); updateTimeWarnUI(entry, e.target); }
+    });
+  });
+  itemsGrid.querySelectorAll('.startM').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const entry = entries.find(x => x.id === Number(e.target.dataset.id));
+      if(entry){ entry.startM = e.target.value; entry.startTime = combineTime(entry.startH, entry.startM); updateTimeWarnUI(entry, e.target); }
+    });
+  });
+  itemsGrid.querySelectorAll('.endH').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const entry = entries.find(x => x.id === Number(e.target.dataset.id));
+      if(entry){ entry.endH = e.target.value; entry.endTime = combineTime(entry.endH, entry.endM); updateTimeWarnUI(entry, e.target); }
+    });
+  });
+  itemsGrid.querySelectorAll('.endM').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const entry = entries.find(x => x.id === Number(e.target.dataset.id));
+      if(entry){ entry.endM = e.target.value; entry.endTime = combineTime(entry.endH, entry.endM); updateTimeWarnUI(entry, e.target); }
+    });
+  });
+  itemsGrid.querySelectorAll('.btnRemove').forEach(btn => {
+    btn.addEventListener('click', e => {
+      entries = entries.filter(x => x.id !== Number(e.target.dataset.id));
+      renderItems();
+      updateSeqPreview();
+    });
+  });
+  itemsGrid.querySelectorAll('.btnDownloadOne').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      const entry = entries.find(x => x.id === Number(e.target.dataset.id));
+      if(entry) await downloadEntry(entry);
+    });
+  });
+}
+
+// --- IndexedDB helpers ---
+function idbOpen(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbSet(key, val){
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).put(val, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function idbGet(key){
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbDel(key){
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// --- Folder handling ---
+async function initFolder(){
+  if(!('indexedDB' in window) || !window.showDirectoryPicker) return;
+  try{
+    const handle = await idbGet(FOLDER_KEY);
+    if(!handle) return;
+    const perm = await handle.queryPermission({ mode: 'readwrite' });
+    if(perm === 'granted'){
+      downloadDirHandle = handle;
+      updateFolderLabel();
+    } else {
+      pendingHandle = handle;
+      updateFolderLabel();
+    }
+  } catch(err){ /* folder lama tidak valid / DB kosong */ }
+}
+
+btnChooseFolder.addEventListener('click', async () => {
+  if(pendingHandle){
+    try{
+      const perm = await pendingHandle.requestPermission({ mode: 'readwrite' });
+      if(perm === 'granted'){
+        downloadDirHandle = pendingHandle;
+        pendingHandle = null;
+        updateFolderLabel();
+        return;
+      }
+    } catch(err){ /* lanjut ke pemilihan folder baru */ }
+  }
+  if(!window.showDirectoryPicker){
+    alert('Browser ini tidak mendukung pemilihan folder otomatis (fitur ini butuh Chrome/Edge terbaru). File akan tetap terunduh ke folder Downloads default browser.');
+    return;
+  }
+  try{
+    const handle = await window.showDirectoryPicker();
+    const perm = await handle.requestPermission({ mode: 'readwrite' });
+    if(perm !== 'granted'){ alert('Izin akses folder ditolak.'); return; }
+    downloadDirHandle = handle;
+    pendingHandle = null;
+    updateFolderLabel();
+    try{ await idbSet(FOLDER_KEY, handle); } catch(e){ console.warn('Gagal menyimpan folder untuk sesi berikutnya', e); }
+  } catch(err){ /* dibatalkan */ }
+});
+
+btnClearFolder.addEventListener('click', async () => {
+  downloadDirHandle = null;
+  pendingHandle = null;
+  folderFilesCache = [];
+  updateFolderLabel();
+  updateSeqPreview();
+  try{ await idbDel(FOLDER_KEY); } catch(e){ /* abaikan */ }
+});
+
+function updateFolderLabel(){
+  if(downloadDirHandle){
+    folderLabel.textContent = `📁 ${downloadDirHandle.name}`;
+    folderLabel.className = 'folder-label set';
+    btnChooseFolder.textContent = '📂 Ganti Folder';
+    btnClearFolder.style.display = 'inline-flex';
+    folderFilesSection.style.display = 'block';
+    refreshFolderFiles();
+  } else if(pendingHandle){
+    folderLabel.textContent = `📁 ${pendingHandle.name} (tersimpan — klik "Aktifkan" untuk memberi izin lagi)`;
+    folderLabel.className = 'folder-label pending';
+    btnChooseFolder.textContent = '🔓 Aktifkan Folder Tersimpan';
+    btnClearFolder.style.display = 'inline-flex';
+    folderFilesSection.style.display = 'none';
+  } else {
+    folderLabel.textContent = 'Belum diatur — unduhan akan memakai folder default browser (biasanya langsung tanpa dialog)';
+    folderLabel.className = 'folder-label';
+    btnChooseFolder.textContent = '📂 Atur Folder Unduhan';
+    btnClearFolder.style.display = 'none';
+    folderFilesSection.style.display = 'none';
+    fileList.innerHTML = '';
+  }
+}
+
+// name -> {name, size, day, seq, start, end, title, ext}
+function parseFilename(name){
+  const rNew = /^(\d+)\.(\d+)\s*·\s*(\d{2}\.\d{2}|--\.--)-(\d{2}\.\d{2}|--\.--)\s*·\s*(.+)\.([^.]+)$/;
+  const rOld = /^(\d+)\.(\d+)\s*-\s*(.+)\.([^.]+)$/;
+  let m = name.match(rNew);
+  if(m){
+    return {
+      day: parseInt(m[1],10), seq: parseInt(m[2],10),
+      start: m[3] === '--.--' ? '' : m[3].replace('.', ':'),
+      end: m[4] === '--.--' ? '' : m[4].replace('.', ':'),
+      title: m[5], ext: m[6]
+    };
+  }
+  m = name.match(rOld);
+  if(m){
+    return { day: parseInt(m[1],10), seq: parseInt(m[2],10), start: '', end: '', title: m[3], ext: m[4] };
+  }
+  const dot = name.lastIndexOf('.');
+  return {
+    day: null, seq: 0, start: '', end: '',
+    title: dot > -1 ? name.slice(0, dot) : name,
+    ext: dot > -1 ? name.slice(dot+1) : ''
+  };
+}
+
+async function copyText(btn, text){
+  if(!text){ return; }
+  try{
+    await navigator.clipboard.writeText(text);
+  } catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); } catch(e2){ /* abaikan */ }
+    ta.remove();
+  }
+  const original = btn.textContent;
+  btn.textContent = '✓';
+  setTimeout(() => { btn.textContent = original; }, 900);
+}
+
+async function refreshFolderFiles(){
+  if(!downloadDirHandle) return;
+  folderFilesCount.textContent = 'Memuat isi folder…';
+  try{
+    const records = [];
+    for await (const [name, handle] of downloadDirHandle.entries()){
+      if(handle.kind === 'file'){
+        let size = null;
+        try{ const f = await handle.getFile(); size = f.size; } catch(e){ /* abaikan */ }
+        records.push({ name, size, ...parseFilename(name) });
+      }
+    }
+    records.sort((a, b) => {
+      if(a.day !== b.day) return (a.day || 0) - (b.day || 0);
+      return (a.seq || 0) - (b.seq || 0);
+    });
+    const imageExts = ['jpg','jpeg','png'];
+    folderFilesCache = records.filter(r => imageExts.includes((r.ext || '').toLowerCase()));
+
+    if(folderFilesCache.length === 0){
+      fileList.innerHTML = '<div class="file-empty">Folder ini masih kosong.</div>';
+    } else {
+      fileList.innerHTML = folderFilesCache.map(f => `
+        <div class="file-row">
+          <span class="col-no">${f.day !== null ? f.day + '.' + f.seq : '—'}</span>
+          <span class="col-time"><span>${f.start || '—'}</span>${f.start ? '<button class="btn-copy" data-copy="'+f.start+'">⧉</button>' : ''}</span>
+          <span class="col-time"><span>${f.end || '—'}</span>${f.end ? '<button class="btn-copy" data-copy="'+f.end+'">⧉</button>' : ''}</span>
+          <span class="col-title"><span title="${f.title.replace(/"/g,'&quot;')}">${f.title}</span><button class="btn-copy" data-copy="${f.title.replace(/"/g,'&quot;')}">⧉</button></span>
+          <span class="col-ext">${f.ext}</span>
+        </div>
+      `).join('');
+      fileList.querySelectorAll('.btn-copy').forEach(btn => {
+        btn.addEventListener('click', () => copyText(btn, btn.dataset.copy));
+      });
+    }
+    folderFilesCount.textContent = `Isi folder (${folderFilesCache.length} file)`;
+    updateSeqPreview();
+  } catch(err){
+    folderFilesCount.textContent = 'Isi folder';
+    fileList.innerHTML = '<div class="file-empty">Tidak bisa membaca isi folder (izin dicabut atau folder dipindah).</div>';
+  }
+}
+btnRefreshFolder.addEventListener('click', refreshFolderFiles);
+
+async function exportFolderExcel(){
+  if(!folderFilesCache.length){
+    alert('Belum ada bukti dukung di folder ini untuk diekspor.');
+    return;
+  }
+  if(typeof XLSX === 'undefined'){
+    alert('Pustaka Excel gagal dimuat. Periksa koneksi internet lalu coba lagi.');
+    return;
+  }
+  const rows = folderFilesCache.map(f => ({
+    'No.': f.day !== null ? `${f.day}.${f.seq}` : '',
+    'Jam Mulai': f.start || '',
+    'Jam Selesai': f.end || '',
+    'Judul Kegiatan': f.title || '',
+    'Ekstensi': f.ext || ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{ wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 45 }, { wch: 8 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Bukti Dukung');
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const filename = `daftar-bukti-dukung-${dateInput.value || 'tanpa-tanggal'}.xlsx`;
+  await saveBlobToFolder(blob, filename);
+}
+btnExportExcel.addEventListener('click', exportFolderExcel);
+
+async function saveBlobToFolder(blob, filename){
+  if(downloadDirHandle){
+    try{
+      let perm = await downloadDirHandle.queryPermission({ mode: 'readwrite' });
+      if(perm !== 'granted'){ perm = await downloadDirHandle.requestPermission({ mode: 'readwrite' }); }
+      if(perm === 'granted'){
+        const fileHandle = await downloadDirHandle.getFileHandle(filename, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return true;
+      }
+    } catch(err){
+      console.error('Gagal simpan ke folder pilihan, fallback ke unduhan biasa', err);
+    }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  return false;
+}
+
+function buildFilename(entry){
+  return `${entry.day}.${entry.seq} · ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} · ${sanitize(entry.title)}.jpg`;
+}
+
+function findFolderConflict(entry){
+  return folderFilesCache.find(f => f.day === entry.day && f.seq === entry.seq);
+}
+
+async function downloadEntry(entry){
+  if(downloadDirHandle){
+    const conflict = findFolderConflict(entry);
+    if(conflict){
+      const ok = confirm(`Nomor ${entry.day}.${entry.seq} sudah ada di folder ("${conflict.title}"). Timpa file itu dengan bukti ini?`);
+      if(!ok) return;
+    }
+  }
+  const saved = await saveBlobToFolder(entry.blob, buildFilename(entry));
+  entry.savedToFolder = saved;
+  renderItems();
+  if(saved) refreshFolderFiles();
+}
+
+async function addEntry(rawBlob){
+  const day = selectedDay();
+  if(day === null){ alert('Pilih tanggal kegiatan terlebih dulu.'); return; }
+  const seq = getMaxSeqForDay(day) + 1;
+  const id = ++idCounter;
+
+  const placeholderUrl = URL.createObjectURL(rawBlob);
+  const entry = { id, blob: rawBlob, url: placeholderUrl, day, seq, title: '', startH: '', startM: '', endH: '', endM: '', startTime: '', endTime: '', sizeBytes: rawBlob.size, processing: true, savedToFolder: false };
+  entries.push(entry);
+  renderItems();
+  updateSeqPreview();
+
+  try{
+    const compressed = rawBlob.size > MAX_BYTES ? await compressImage(rawBlob, MAX_BYTES) : rawBlob;
+    URL.revokeObjectURL(entry.url);
+    entry.blob = compressed;
+    entry.url = URL.createObjectURL(compressed);
+    entry.sizeBytes = compressed.size;
+  } catch(err){
+    console.error('Kompresi gagal', err);
+  } finally {
+    entry.processing = false;
+    renderItems();
+  }
+}
+
+document.addEventListener('paste', (e) => {
+  const items = e.clipboardData && e.clipboardData.items;
+  if(!items) return;
+  for(const item of items){
+    if(item.type && item.type.startsWith('image/')){
+      const blob = item.getAsFile();
+      if(blob) addEntry(blob);
+    }
+  }
+});
+
+btnUpload.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  Array.from(e.target.files).forEach(f => addEntry(f));
+  fileInput.value = '';
+});
+
+['dragover','dragenter'].forEach(evt => {
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('drag'); });
+});
+['dragleave','drop'].forEach(evt => {
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('drag'); });
+});
+dropzone.addEventListener('drop', e => {
+  const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+  files.forEach(f => addEntry(f));
+});
+
+btnScreenCapture.addEventListener('click', async () => {
+  try{
+    mediaStream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always' } });
+    liveVideo.srcObject = mediaStream;
+    await liveVideo.play();
+    captureLive.style.display = 'block';
+  } catch(err){
+    alert('Ambil dari Layar tidak tersedia atau ditolak di sini. Gunakan Tempel (Ctrl+V) atau Upload File sebagai gantinya.');
+  }
+});
+
+btnGrab.addEventListener('click', () => {
+  if(!mediaStream) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = liveVideo.videoWidth;
+  canvas.height = liveVideo.videoHeight;
+  canvas.getContext('2d').drawImage(liveVideo, 0, 0);
+  canvas.toBlob(blob => { if(blob) addEntry(blob); }, 'image/png');
+});
+
+btnStopCapture.addEventListener('click', stopCapture);
+function stopCapture(){
+  if(mediaStream){ mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+  captureLive.style.display = 'none';
+}
+
+btnClearAll.addEventListener('click', () => {
+  if(entries.length && !confirm('Hapus semua bukti dukung yang sudah diambil?')) return;
+  entries.forEach(e => URL.revokeObjectURL(e.url));
+  entries = [];
+  renderItems();
+  updateSeqPreview();
+});
+
+btnDownloadAll.addEventListener('click', async () => {
+  if(!entries.length) return;
+
+  if(downloadDirHandle){
+    const usedNames = new Set();
+    for(const entry of entries){
+      const conflict = findFolderConflict(entry);
+      if(conflict){
+        const ok = confirm(`Nomor ${entry.day}.${entry.seq} sudah ada di folder ("${conflict.title}"). Timpa file itu dengan bukti ini?`);
+        if(!ok) continue;
+      }
+      let filename = buildFilename(entry);
+      let unique = filename, n = 2;
+      while(usedNames.has(unique)){
+        unique = `${entry.day}.${entry.seq} · ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} · ${sanitize(entry.title)} (${n}).jpg`;
+        n++;
+      }
+      usedNames.add(unique);
+      const saved = await saveBlobToFolder(entry.blob, unique);
+      entry.savedToFolder = saved;
+    }
+    renderItems();
+    refreshFolderFiles();
+    alert(`Selesai menyimpan bukti dukung ke folder "${downloadDirHandle.name}".`);
+    return;
+  }
+
+  const zip = new JSZip();
+  const usedNames = new Set();
+  for(const entry of entries){
+    let filename = buildFilename(entry);
+    let unique = filename, n = 2;
+    while(usedNames.has(unique)){
+      unique = `${entry.day}.${entry.seq} · ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} · ${sanitize(entry.title)} (${n}).jpg`;
+      n++;
+    }
+    usedNames.add(unique);
+    zip.file(unique, entry.blob);
+  }
+  const content = await zip.generateAsync({ type: 'blob' });
+  await saveBlobToFolder(content, `bukti-dukung-${dateInput.value || 'tanpa-tanggal'}.zip`);
+});
+
+renderItems();
+initFolder();
+</script>
+</body>
+</html>
