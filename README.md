@@ -14,7 +14,8 @@ Dibangun sebagai **single-file HTML** — tidak perlu instalasi, tidak perlu ser
 - **Daftar isi folder real-time** — tabel berisi No. | Jam Mulai | Jam Selesai | Judul Kegiatan | Ekstensi, lengkap dengan tombol salin per kolom untuk mempercepat pengisian form e-Kinerja
 - **Export ke Excel** — daftar bukti dukung di folder bisa diekspor jadi file `.xlsx` satu klik
 - **Deteksi bentrok nomor** — sistem memperingatkan (bukan menimpa diam-diam) jika nomor yang dipakai sudah ada di folder
-
+- **Total Durasi Jam Kerja** — otomatis dihitung dan update langsung saat jam mulai/selesai diisi
+  
 ## Cara Pakai
 
 1. Buka https://esa-beta.vercel.app di browser (Chrome/Edge disarankan untuk fitur lengkap)
