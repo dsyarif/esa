@@ -170,6 +170,11 @@
   .folder-files{margin-top:14px;}
   .folder-files-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .folder-files-head span{font-size:12.5px;color:var(--text-dim);font-weight:500;}
+  select.date-filter{
+    background:var(--bg-1);border:1px solid var(--line);color:var(--text);
+    border-radius:9px;padding:7px 10px;font-size:12.5px;font-family:'Inter',sans-serif;outline:none;
+  }
+  select.date-filter:focus{border-color:var(--violet);}
   .file-table{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;}
   .file-head-row, .file-row{
     display:grid;
@@ -313,7 +318,10 @@
     <div class="folder-files" id="folderFilesSection" style="display:none;">
       <div class="folder-files-head">
         <span id="folderFilesCount">Isi folder</span>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <select id="folderDateFilter" class="date-filter">
+            <option value="">Semua Tanggal</option>
+          </select>
           <button class="btn btn-danger" id="btnFixMismatch" style="padding:6px 12px;font-size:12px;display:none;">🛠️ Perbaiki File Bermasalah</button>
           <button class="btn btn-ghost" id="btnExportExcel" style="padding:6px 12px;font-size:12px;">📊 Export Excel</button>
           <button class="btn btn-ghost" id="btnRefreshFolder" style="padding:6px 12px;font-size:12px;">🔄 Muat Ulang</button>
@@ -397,6 +405,7 @@ const fileList = document.getElementById('fileList');
 const btnRefreshFolder = document.getElementById('btnRefreshFolder');
 const btnExportExcel = document.getElementById('btnExportExcel');
 const btnFixMismatch = document.getElementById('btnFixMismatch');
+const folderDateFilter = document.getElementById('folderDateFilter');
 const folderTotal = document.getElementById('folderTotal');
 
 let entries = []; // {id, blob, url, day, seq, title, startTime, endTime, sizeBytes, processing, savedToFolder}
@@ -406,6 +415,7 @@ let downloadDirHandle = null;
 let pendingHandle = null;
 let folderFilesCache = []; // parsed records dari folder aktif
 let editingFile = null; // nama file yang sedang diedit di tabel folder
+let dateFilter = ''; // filter tabel folder berdasarkan tanggal (hari) — '' = semua
 
 function todayStr(){
   const d = new Date();
@@ -708,6 +718,7 @@ btnClearFolder.addEventListener('click', async () => {
   pendingHandle = null;
   folderFilesCache = [];
   editingFile = null;
+  dateFilter = '';
   updateFolderLabel();
   updateSeqPreview();
   try{ await idbDel(FOLDER_KEY); } catch(e){ /* abaikan */ }
@@ -818,8 +829,9 @@ async function refreshFolderFiles(){
     const imageExts = ['jpg','jpeg','png'];
     folderFilesCache = records.filter(r => imageExts.includes((r.ext || '').toLowerCase()));
 
+    updateDateFilterOptions();
     renderFolderTable();
-    folderFilesCount.textContent = `Isi folder (${folderFilesCache.length} file)`;
+    folderFilesCount.textContent = `Isi folder (${visibleFolderRows().length} dari ${folderFilesCache.length} file)`;
     updateSeqPreview();
 
     const mismatchCount = folderFilesCache.filter(f => f.mismatch).length;
@@ -836,14 +848,44 @@ async function refreshFolderFiles(){
 }
 btnRefreshFolder.addEventListener('click', refreshFolderFiles);
 
+function visibleFolderRows(){
+  return folderFilesCache
+    .map((f, idx) => ({ f, idx }))
+    .filter(({ f }) => !dateFilter || String(f.day) === dateFilter);
+}
+
+function updateDateFilterOptions(){
+  const days = Array.from(new Set(folderFilesCache.map(f => f.day).filter(d => d !== null))).sort((a, b) => a - b);
+  const current = folderDateFilter.value;
+  folderDateFilter.innerHTML = '<option value="">Semua Tanggal</option>' + days.map(d => `<option value="${d}">Tanggal ${d}</option>`).join('');
+  if(days.map(String).includes(current)){
+    folderDateFilter.value = current;
+  } else {
+    folderDateFilter.value = '';
+    dateFilter = '';
+  }
+}
+folderDateFilter.addEventListener('change', () => {
+  dateFilter = folderDateFilter.value;
+  renderFolderTable();
+  folderFilesCount.textContent = `Isi folder (${visibleFolderRows().length} dari ${folderFilesCache.length} file)`;
+});
+
 function renderFolderTable(){
+  const rows = visibleFolderRows();
+
   if(folderFilesCache.length === 0){
     fileList.innerHTML = '<div class="file-empty">Folder ini masih kosong.</div>';
     folderTotal.textContent = '';
     return;
   }
+  if(rows.length === 0){
+    fileList.innerHTML = `<div class="file-empty">Tidak ada bukti untuk Tanggal ${dateFilter}.</div>`;
+    folderTotal.textContent = '';
+    return;
+  }
 
-  fileList.innerHTML = folderFilesCache.map((f, idx) => {
+  fileList.innerHTML = rows.map(({ f, idx }) => {
     if(editingFile === f.name){
       const sParts = (f.start || '').split(':');
       const eParts = (f.end || '').split(':');
@@ -924,8 +966,9 @@ function renderFolderTable(){
     });
   });
 
-  const totalMinutes = folderFilesCache.reduce((sum, f) => sum + (durationMinutes(f.start, f.end) || 0), 0);
-  folderTotal.innerHTML = `Total durasi tercatat: <b>${fmtDuration(totalMinutes)}</b>`;
+  const totalMinutes = rows.reduce((sum, { f }) => sum + (durationMinutes(f.start, f.end) || 0), 0);
+  const totalLabel = dateFilter ? `Total durasi (Tanggal ${dateFilter})` : 'Total durasi tercatat';
+  folderTotal.innerHTML = `${totalLabel}: <b>${fmtDuration(totalMinutes)}</b>`;
 }
 
 async function saveFileEdit(record, draft){
