@@ -173,7 +173,7 @@
   .file-table{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;}
   .file-head-row, .file-row{
     display:grid;
-    grid-template-columns:56px 84px 84px 78px 1fr 56px;
+    grid-template-columns:56px 84px 84px 78px 1fr 56px 60px;
     gap:8px;align-items:center;
   }
   .file-head-row{
@@ -188,8 +188,22 @@
   .file-row .col-time, .file-row .col-title{display:flex;align-items:center;gap:5px;overflow:hidden;}
   .file-row .col-time span, .file-row .col-title span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .file-row .col-ext{color:var(--text-faint);font-size:11px;text-transform:uppercase;}
+  .file-row .col-actions{display:flex;gap:4px;justify-content:flex-end;}
+  .file-row.mismatch{border-color:rgba(248,113,113,0.4);background:rgba(248,113,113,0.06);}
+  .mismatch-badge{
+    display:inline-block;margin-left:4px;font-size:10px;font-weight:700;
+    color:var(--bad);background:rgba(248,113,113,0.15);
+    border-radius:5px;padding:1px 5px;text-transform:none;
+  }
   .file-row .col-duration{color:var(--text-dim);font-size:12px;white-space:nowrap;}
   .file-empty{font-size:13px;color:var(--text-faint);padding:10px 2px;}
+
+  .file-row.edit-row{display:flex;flex-direction:column;gap:10px;padding:14px;border-color:var(--violet-dim);}
+  .edit-grid{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+  .edit-grid .field{gap:3px;min-width:0;}
+  .edit-grid label{font-size:10.5px;}
+  .edit-grid .titleField{flex:1;min-width:160px;}
+  .edit-actions{display:flex;gap:8px;justify-content:flex-end;}
 
   .grid{display:flex;flex-direction:column;gap:12px;}
   .item{
@@ -299,13 +313,14 @@
     <div class="folder-files" id="folderFilesSection" style="display:none;">
       <div class="folder-files-head">
         <span id="folderFilesCount">Isi folder</span>
-        <div style="display:flex;gap:8px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-danger" id="btnFixMismatch" style="padding:6px 12px;font-size:12px;display:none;">🛠️ Perbaiki File Bermasalah</button>
           <button class="btn btn-ghost" id="btnExportExcel" style="padding:6px 12px;font-size:12px;">📊 Export Excel</button>
           <button class="btn btn-ghost" id="btnRefreshFolder" style="padding:6px 12px;font-size:12px;">🔄 Muat Ulang</button>
         </div>
       </div>
       <div class="file-head-row">
-        <span>No.</span><span>Mulai</span><span>Selesai</span><span>Durasi</span><span>Judul Kegiatan</span><span>Ext</span>
+        <span>No.</span><span>Mulai</span><span>Selesai</span><span>Durasi</span><span>Judul Kegiatan</span><span>Ext</span><span>Aksi</span>
       </div>
       <div class="file-table" id="fileList"></div>
       <div class="folder-total" id="folderTotal"></div>
@@ -381,6 +396,7 @@ const folderFilesCount = document.getElementById('folderFilesCount');
 const fileList = document.getElementById('fileList');
 const btnRefreshFolder = document.getElementById('btnRefreshFolder');
 const btnExportExcel = document.getElementById('btnExportExcel');
+const btnFixMismatch = document.getElementById('btnFixMismatch');
 const folderTotal = document.getElementById('folderTotal');
 
 let entries = []; // {id, blob, url, day, seq, title, startTime, endTime, sizeBytes, processing, savedToFolder}
@@ -389,6 +405,7 @@ let mediaStream = null;
 let downloadDirHandle = null;
 let pendingHandle = null;
 let folderFilesCache = []; // parsed records dari folder aktif
+let editingFile = null; // nama file yang sedang diedit di tabel folder
 
 function todayStr(){
   const d = new Date();
@@ -469,6 +486,7 @@ function updateTimeWarnUI(entry, fromInput){
 
 async function compressImage(blob, maxBytes){
   const bitmap = await createImageBitmap(blob);
+  const MIN_WIDTH = 640; // jangan diperkecil lebih dari ini, biar tetap terbaca & tidak dianggap gambar tidak valid
   let scale = 1;
   let quality = 0.9;
   let result = blob;
@@ -482,6 +500,7 @@ async function compressImage(blob, maxBytes){
     ctx.drawImage(bitmap, 0, 0, w, h);
     result = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
     if(result.size <= maxBytes) break;
+    if(w <= MIN_WIDTH) break; // sudah di batas minimum lebar, jangan diperkecil lagi — terima hasil terbaik saat ini
     if(quality > 0.35){ quality -= 0.07; }
     else { scale *= 0.85; }
     attempts++;
@@ -688,6 +707,7 @@ btnClearFolder.addEventListener('click', async () => {
   downloadDirHandle = null;
   pendingHandle = null;
   folderFilesCache = [];
+  editingFile = null;
   updateFolderLabel();
   updateSeqPreview();
   try{ await idbDel(FOLDER_KEY); } catch(e){ /* abaikan */ }
@@ -719,9 +739,10 @@ function updateFolderLabel(){
 
 // name -> {name, size, day, seq, start, end, title, ext}
 function parseFilename(name){
-  const rNew = /^(\d+)\.(\d+)\s*·\s*(\d{2}\.\d{2}|--\.--)-(\d{2}\.\d{2}|--\.--)\s*·\s*(.+)\.([^.]+)$/;
+  const rNewDot = /^(\d+)\.(\d+)\s*·\s*(\d{2}\.\d{2}|--\.--)-(\d{2}\.\d{2}|--\.--)\s*·\s*(.+)\.([^.]+)$/;
+  const rNewDash = /^(\d+)\.(\d+)\s*-\s*(\d{2}\.\d{2}|--\.--)-(\d{2}\.\d{2}|--\.--)\s*-\s*(.+)\.([^.]+)$/;
   const rOld = /^(\d+)\.(\d+)\s*-\s*(.+)\.([^.]+)$/;
-  let m = name.match(rNew);
+  let m = name.match(rNewDot) || name.match(rNewDash);
   if(m){
     return {
       day: parseInt(m[1],10), seq: parseInt(m[2],10),
@@ -740,6 +761,20 @@ function parseFilename(name){
     title: dot > -1 ? name.slice(0, dot) : name,
     ext: dot > -1 ? name.slice(dot+1) : ''
   };
+}
+
+// Deteksi format asli file dari byte pembuka (magic number), bukan dari ekstensi nama file
+async function detectActualFormat(file){
+  try{
+    const buf = await file.slice(0, 12).arrayBuffer();
+    const b = new Uint8Array(buf);
+    if(b[0]===0x89 && b[1]===0x50 && b[2]===0x4E && b[3]===0x47) return 'png';
+    if(b[0]===0xFF && b[1]===0xD8 && b[2]===0xFF) return 'jpg';
+    if(b[0]===0x25 && b[1]===0x50 && b[2]===0x44 && b[3]===0x46) return 'pdf';
+    if(b[0]===0x47 && b[1]===0x49 && b[2]===0x46) return 'gif';
+    if(b[8]===0x57 && b[9]===0x45 && b[10]===0x42 && b[11]===0x50) return 'webp';
+    return 'unknown';
+  } catch(e){ return 'unknown'; }
 }
 
 async function copyText(btn, text){
@@ -765,9 +800,15 @@ async function refreshFolderFiles(){
     const records = [];
     for await (const [name, handle] of downloadDirHandle.entries()){
       if(handle.kind === 'file'){
-        let size = null;
-        try{ const f = await handle.getFile(); size = f.size; } catch(e){ /* abaikan */ }
-        records.push({ name, size, ...parseFilename(name) });
+        let size = null, actualFormat = 'unknown';
+        try{
+          const f = await handle.getFile();
+          size = f.size;
+          actualFormat = await detectActualFormat(f);
+        } catch(e){ /* abaikan */ }
+        const parsed = parseFilename(name);
+        const mismatch = /^(jpg|jpeg)$/i.test(parsed.ext) && actualFormat !== 'unknown' && actualFormat !== 'jpg';
+        records.push({ name, size, handle, actualFormat, mismatch, ...parsed });
       }
     }
     records.sort((a, b) => {
@@ -777,37 +818,194 @@ async function refreshFolderFiles(){
     const imageExts = ['jpg','jpeg','png'];
     folderFilesCache = records.filter(r => imageExts.includes((r.ext || '').toLowerCase()));
 
-    if(folderFilesCache.length === 0){
-      fileList.innerHTML = '<div class="file-empty">Folder ini masih kosong.</div>';
-      folderTotal.textContent = '';
-    } else {
-      fileList.innerHTML = folderFilesCache.map(f => `
-        <div class="file-row">
-          <span class="col-no">${f.day !== null ? f.day + '.' + f.seq : '—'}</span>
-          <span class="col-time"><span>${f.start || '—'}</span>${f.start ? '<button class="btn-copy" data-copy="'+f.start+'">⧉</button>' : ''}</span>
-          <span class="col-time"><span>${f.end || '—'}</span>${f.end ? '<button class="btn-copy" data-copy="'+f.end+'">⧉</button>' : ''}</span>
-          <span class="col-duration">${durationLabel(f.start, f.end)}</span>
-          <span class="col-title"><span title="${f.title.replace(/"/g,'&quot;')}">${f.title}</span><button class="btn-copy" data-copy="${f.title.replace(/"/g,'&quot;')}">⧉</button></span>
-          <span class="col-ext">${f.ext}</span>
-        </div>
-      `).join('');
-      fileList.querySelectorAll('.btn-copy').forEach(btn => {
-        btn.addEventListener('click', () => copyText(btn, btn.dataset.copy));
-      });
-      const totalMinutes = folderFilesCache.reduce((sum, f) => {
-        const m = durationMinutes(f.start, f.end);
-        return sum + (m || 0);
-      }, 0);
-      folderTotal.innerHTML = `Total durasi tercatat: <b>${fmtDuration(totalMinutes)}</b>`;
-    }
+    renderFolderTable();
     folderFilesCount.textContent = `Isi folder (${folderFilesCache.length} file)`;
     updateSeqPreview();
+
+    const mismatchCount = folderFilesCache.filter(f => f.mismatch).length;
+    if(mismatchCount > 0){
+      btnFixMismatch.style.display = 'inline-flex';
+      btnFixMismatch.textContent = `🛠️ Perbaiki ${mismatchCount} File Bermasalah`;
+    } else {
+      btnFixMismatch.style.display = 'none';
+    }
   } catch(err){
     folderFilesCount.textContent = 'Isi folder';
     fileList.innerHTML = '<div class="file-empty">Tidak bisa membaca isi folder (izin dicabut atau folder dipindah).</div>';
   }
 }
 btnRefreshFolder.addEventListener('click', refreshFolderFiles);
+
+function renderFolderTable(){
+  if(folderFilesCache.length === 0){
+    fileList.innerHTML = '<div class="file-empty">Folder ini masih kosong.</div>';
+    folderTotal.textContent = '';
+    return;
+  }
+
+  fileList.innerHTML = folderFilesCache.map((f, idx) => {
+    if(editingFile === f.name){
+      const sParts = (f.start || '').split(':');
+      const eParts = (f.end || '').split(':');
+      return `
+        <div class="file-row edit-row" data-idx="${idx}">
+          <div class="edit-grid">
+            <div class="field"><label>Hari</label><input type="number" min="1" class="editDay" value="${f.day ?? ''}"></div>
+            <div class="field"><label>No.</label><input type="number" min="1" class="editSeq" value="${f.seq ?? ''}"></div>
+            <div class="field"><label>Jam Mulai</label><div class="hm-group">
+              <input type="number" min="0" max="23" placeholder="jj" class="editStartH" value="${sParts[0] || ''}">
+              <span>:</span>
+              <input type="number" min="0" max="59" placeholder="mm" class="editStartM" value="${sParts[1] || ''}">
+            </div></div>
+            <div class="field"><label>Jam Selesai</label><div class="hm-group">
+              <input type="number" min="0" max="23" placeholder="jj" class="editEndH" value="${eParts[0] || ''}">
+              <span>:</span>
+              <input type="number" min="0" max="59" placeholder="mm" class="editEndM" value="${eParts[1] || ''}">
+            </div></div>
+            <div class="field titleField"><label>Judul Kegiatan</label><input type="text" class="editTitle" value="${f.title.replace(/"/g,'&quot;')}"></div>
+          </div>
+          <div class="edit-actions">
+            <button class="btn btn-ghost btnCancelEdit" data-idx="${idx}">Batal</button>
+            <button class="btn btn-primary btnSaveEdit" data-idx="${idx}">💾 Simpan</button>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="file-row ${f.mismatch ? 'mismatch' : ''}">
+        <span class="col-no">${f.day !== null ? f.day + '.' + f.seq : '—'}</span>
+        <span class="col-time"><span>${f.start || '—'}</span>${f.start ? '<button class="btn-copy" data-copy="'+f.start+'">⧉</button>' : ''}</span>
+        <span class="col-time"><span>${f.end || '—'}</span>${f.end ? '<button class="btn-copy" data-copy="'+f.end+'">⧉</button>' : ''}</span>
+        <span class="col-duration">${durationLabel(f.start, f.end)}</span>
+        <span class="col-title"><span title="${f.title.replace(/"/g,'&quot;')}">${f.title}</span><button class="btn-copy" data-copy="${f.title.replace(/"/g,'&quot;')}">⧉</button></span>
+        <span class="col-ext">${f.ext}${f.mismatch ? `<span class="mismatch-badge" title="Nama file .${f.ext} tapi isinya sebenarnya ${f.actualFormat.toUpperCase()}">⚠ ${f.actualFormat.toUpperCase()}</span>` : ''}</span>
+        <span class="col-actions">
+          <button class="btn-copy btnEditFile" data-idx="${idx}" title="Edit">✏️</button>
+          <button class="btn-copy btnDeleteFile" data-idx="${idx}" title="Hapus">🗑️</button>
+        </span>
+      </div>
+    `;
+  }).join('');
+
+  fileList.querySelectorAll('.btn-copy[data-copy]').forEach(btn => {
+    btn.addEventListener('click', () => copyText(btn, btn.dataset.copy));
+  });
+  fileList.querySelectorAll('.btnEditFile').forEach(btn => {
+    btn.addEventListener('click', () => {
+      editingFile = folderFilesCache[Number(btn.dataset.idx)].name;
+      renderFolderTable();
+    });
+  });
+  fileList.querySelectorAll('.btnCancelEdit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      editingFile = null;
+      renderFolderTable();
+    });
+  });
+  fileList.querySelectorAll('.btnSaveEdit').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const row = btn.closest('.file-row');
+      const record = folderFilesCache[Number(btn.dataset.idx)];
+      const draft = {
+        day: row.querySelector('.editDay').value,
+        seq: row.querySelector('.editSeq').value,
+        startH: row.querySelector('.editStartH').value,
+        startM: row.querySelector('.editStartM').value,
+        endH: row.querySelector('.editEndH').value,
+        endM: row.querySelector('.editEndM').value,
+        title: row.querySelector('.editTitle').value
+      };
+      await saveFileEdit(record, draft);
+    });
+  });
+  fileList.querySelectorAll('.btnDeleteFile').forEach(btn => {
+    btn.addEventListener('click', () => {
+      deleteFile(folderFilesCache[Number(btn.dataset.idx)]);
+    });
+  });
+
+  const totalMinutes = folderFilesCache.reduce((sum, f) => sum + (durationMinutes(f.start, f.end) || 0), 0);
+  folderTotal.innerHTML = `Total durasi tercatat: <b>${fmtDuration(totalMinutes)}</b>`;
+}
+
+async function saveFileEdit(record, draft){
+  const day = parseInt(draft.day, 10);
+  const seq = parseInt(draft.seq, 10);
+  if(isNaN(day) || isNaN(seq) || day < 1 || seq < 1){
+    alert('Hari dan No. harus diisi dengan angka yang valid.');
+    return;
+  }
+  const start = combineTime(draft.startH, draft.startM);
+  const end = combineTime(draft.endH, draft.endM);
+  const title = draft.title.trim() || 'Tanpa Judul';
+  const newName = `${day}.${seq} - ${fmtTimeForFile(start)}-${fmtTimeForFile(end)} - ${sanitize(title)}.${record.ext}`;
+
+  if(newName === record.name){
+    editingFile = null;
+    renderFolderTable();
+    return;
+  }
+
+  const conflict = folderFilesCache.find(f => f.name !== record.name && f.name === newName);
+  if(conflict){
+    const ok = confirm(`Nama file baru ("${newName}") akan menimpa file lain yang sudah ada dengan nomor yang sama. Lanjutkan?`);
+    if(!ok) return;
+  }
+
+  try{
+    const file = await record.handle.getFile();
+    const newHandle = await downloadDirHandle.getFileHandle(newName, { create: true });
+    const writable = await newHandle.createWritable();
+    await writable.write(file);
+    await writable.close();
+    await downloadDirHandle.removeEntry(record.name);
+  } catch(err){
+    console.error(err);
+    alert('Gagal menyimpan perubahan: ' + err.message);
+    return;
+  }
+  editingFile = null;
+  await refreshFolderFiles();
+}
+
+async function deleteFile(record){
+  const ok = confirm(`Hapus file "${record.name}" dari folder? Tindakan ini tidak bisa dibatalkan.`);
+  if(!ok) return;
+  try{
+    await downloadDirHandle.removeEntry(record.name);
+    await refreshFolderFiles();
+  } catch(err){
+    console.error(err);
+    alert('Gagal menghapus file: ' + err.message);
+  }
+}
+
+async function fixMismatchedFiles(){
+  const targets = folderFilesCache.filter(f => f.mismatch);
+  if(!targets.length) return;
+  const ok = confirm(`Ditemukan ${targets.length} file bernama .jpg tapi isinya sebenarnya format lain (misal PNG) — ini penyebab file ditolak sistem e-kinerja. Perbaiki semuanya sekarang? File akan ditimpa di tempat yang sama dengan versi JPEG asli, nama file tidak berubah.`);
+  if(!ok) return;
+
+  btnFixMismatch.disabled = true;
+  let done = 0;
+  for(const rec of targets){
+    folderFilesCount.textContent = `Memperbaiki ${done}/${targets.length}…`;
+    try{
+      const file = await rec.handle.getFile();
+      const fixedBlob = await compressImage(file, MAX_BYTES);
+      const writable = await rec.handle.createWritable();
+      await writable.write(fixedBlob);
+      await writable.close();
+    } catch(err){
+      console.error('Gagal memperbaiki', rec.name, err);
+    }
+    done++;
+  }
+  btnFixMismatch.disabled = false;
+  await refreshFolderFiles();
+  alert(`Selesai memperbaiki ${done} dari ${targets.length} file ke JPEG asli.`);
+}
+btnFixMismatch.addEventListener('click', fixMismatchedFiles);
 
 async function exportFolderExcel(){
   if(!folderFilesCache.length){
@@ -865,7 +1063,7 @@ async function saveBlobToFolder(blob, filename){
 }
 
 function buildFilename(entry){
-  return `${entry.day}.${entry.seq} · ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} · ${sanitize(entry.title)}.jpg`;
+  return `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)}.jpg`;
 }
 
 function findFolderConflict(entry){
@@ -899,7 +1097,11 @@ async function addEntry(rawBlob){
   updateSeqPreview();
 
   try{
-    const compressed = rawBlob.size > MAX_BYTES ? await compressImage(rawBlob, MAX_BYTES) : rawBlob;
+    // Selalu dikonversi lewat canvas → JPEG asli, bukan cuma saat ukurannya kelebihan.
+    // Ini penting: hasil "Ambil dari Layar" dan sebagian clipboard paste aslinya PNG,
+    // jadi kalau dilewatkan begitu saja, isinya PNG tapi nama filenya .jpg — ditolak
+    // server yang memvalidasi tipe file dari isi asli file, bukan cuma ekstensinya.
+    const compressed = await compressImage(rawBlob, MAX_BYTES);
     URL.revokeObjectURL(entry.url);
     entry.blob = compressed;
     entry.url = URL.createObjectURL(compressed);
@@ -988,7 +1190,7 @@ btnDownloadAll.addEventListener('click', async () => {
       let filename = buildFilename(entry);
       let unique = filename, n = 2;
       while(usedNames.has(unique)){
-        unique = `${entry.day}.${entry.seq} · ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} · ${sanitize(entry.title)} (${n}).jpg`;
+        unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).jpg`;
         n++;
       }
       usedNames.add(unique);
@@ -1007,7 +1209,7 @@ btnDownloadAll.addEventListener('click', async () => {
     let filename = buildFilename(entry);
     let unique = filename, n = 2;
     while(usedNames.has(unique)){
-      unique = `${entry.day}.${entry.seq} · ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} · ${sanitize(entry.title)} (${n}).jpg`;
+      unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).jpg`;
       n++;
     }
     usedNames.add(unique);
