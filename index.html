@@ -60,6 +60,14 @@
   }
   .full-name{font-size:14px;color:var(--text-faint);font-weight:500;}
   .sub{color:var(--text-dim);font-size:14.5px;line-height:1.5;max-width:65ch;margin-top:4px;}
+  .visit-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+  .chip{
+    font-size:12px;color:var(--text-dim);
+    background:rgba(139,92,246,0.10);border:1px solid rgba(139,92,246,0.25);
+    border-radius:999px;padding:5px 12px;white-space:nowrap;
+  }
+  .chip b{color:var(--violet-2);font-family:'Space Grotesk',sans-serif;font-weight:700;}
+  .chip.warn{color:var(--warn);background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.3);}
 
   .panel{
     background:linear-gradient(180deg, var(--panel), var(--panel-2));
@@ -290,6 +298,7 @@
       <span class="full-name">E-Kinerja Screenshot Assistant</span>
     </div>
     <p class="sub">Tempel, upload, atau ambil screenshot — otomatis dinamai per tanggal, dilengkapi jam kegiatan dan judul, lalu dikompres di bawah 500&nbsp;KB. Semua diproses langsung di browser kamu, tidak diunggah ke server mana pun.</p>
+    <div class="visit-stats" id="visitStats"></div>
   </header>
 
   <div class="panel">
@@ -381,6 +390,13 @@ const MAX_BYTES = 500 * 1024; // 500 KB
 const DB_NAME = 'esa-store';
 const STORE_NAME = 'kv';
 const FOLDER_KEY = 'downloadDir';
+const STATS_KEY = 'visitStats';
+// Counter pusat (opsional). Pilih salah satu:
+//   - Vercel : '/api/counter'                       (lihat api/counter.js)
+//   - Apps Script : 'https://script.google.com/macros/s/.../exec'  (lihat counter-apps-script.gs)
+// Kosongkan untuk memakai counter lokal saja (hanya menghitung di perangkat/browser ini).
+const COUNTER_ENDPOINT = '/api/counter';
+const VISIT_GAP_MS = 30 * 60 * 1000; // refresh dalam 30 menit dihitung sebagai kunjungan yang sama
 
 const dateInput = document.getElementById('dateInput');
 const seqPreview = document.getElementById('seqPreview');
@@ -1263,8 +1279,58 @@ btnDownloadAll.addEventListener('click', async () => {
   await saveBlobToFolder(content, `bukti-dukung-${dateInput.value || 'tanpa-tanggal'}.zip`);
 });
 
+// --- Counter akses ---
+function fmtNum(n){ return Number(n).toLocaleString('id-ID'); }
+
+function renderVisitStats(local, remote){
+  const el = document.getElementById('visitStats');
+  if(!el) return;
+  let html = `<span class="chip" title="Dihitung dari browser ini saja">👁 Dibuka <b>${fmtNum(local.total)}</b>× di perangkat ini</span>`;
+  if(remote && remote !== 'error'){
+    html += `<span class="chip" title="Gabungan semua pengguna ESA">🌐 Total akses <b>${fmtNum(remote.total)}</b></span>`;
+    html += `<span class="chip">Hari ini <b>${fmtNum(remote.today)}</b></span>`;
+    html += `<span class="chip">Pengguna unik <b>${fmtNum(remote.unique)}</b></span>`;
+  } else if(remote === 'error'){
+    html += `<span class="chip warn">⚠ Counter pusat tidak terjangkau</span>`;
+  }
+  el.innerHTML = html;
+}
+
+async function initVisitCounter(){
+  let local = { total: 0, lastHit: 0, visitorId: '', firstVisit: 0 };
+  let persisted = true;
+  try{
+    const saved = await idbGet(STATS_KEY);
+    if(saved) local = { ...local, ...saved };
+  } catch(e){ persisted = false; }
+
+  const now = Date.now();
+  if(!local.visitorId){
+    local.visitorId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Math.random().toString(16).slice(2) + now.toString(16));
+  }
+  if(!local.firstVisit) local.firstVisit = now;
+
+  const isNewVisit = now - (local.lastHit || 0) > VISIT_GAP_MS;
+  if(isNewVisit){ local.total += 1; local.lastHit = now; }
+
+  try{ await idbSet(STATS_KEY, local); } catch(e){ persisted = false; }
+  renderVisitStats(local, null);
+
+  if(COUNTER_ENDPOINT){
+    try{
+      const url = `${COUNTER_ENDPOINT}?action=${isNewVisit ? 'hit' : 'stats'}&id=${encodeURIComponent(local.visitorId)}`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      renderVisitStats(local, await res.json());
+    } catch(e){
+      renderVisitStats(local, 'error');
+    }
+  }
+}
+
 renderItems();
 initFolder();
+initVisitCounter();
 </script>
 </body>
 </html>
