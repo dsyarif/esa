@@ -13,12 +13,12 @@ Dibangun sebagai **single-file HTML** — tidak perlu instalasi, tidak perlu ser
 - **Folder unduhan tanpa dialog berulang** — sekali atur folder tujuan (File System Access API), semua unduhan berikutnya langsung tersimpan ke situ; folder yang dipilih diingat otomatis lewat IndexedDB walau halaman di-refresh
 - **Daftar isi folder real-time** — tabel berisi No. | Jam Mulai | Jam Selesai | Judul Kegiatan | Ekstensi, lengkap dengan tombol salin per kolom untuk mempercepat pengisian form e-Kinerja
 - **Export ke Excel** — daftar bukti dukung di folder bisa diekspor jadi file `.xlsx` satu klik
+- **Counter akses** — menampilkan berapa kali ESA dibuka di perangkat ini (tersimpan di IndexedDB); opsional bisa diaktifkan counter pusat lintas pengguna (total akses, akses hari ini, pengguna unik) lewat Google Apps Script
 - **Deteksi bentrok nomor** — sistem memperingatkan (bukan menimpa diam-diam) jika nomor yang dipakai sudah ada di folder
-- **Total Durasi Jam Kerja** — otomatis dihitung dan update langsung saat jam mulai/selesai diisi
-  
+
 ## Cara Pakai
 
-1. Buka https://esa-beta.vercel.app di browser (Chrome/Edge disarankan untuk fitur lengkap)
+1. Buka `esa.html` di browser (Chrome/Edge disarankan untuk fitur lengkap)
 2. Pilih **tanggal kegiatan** — nomor urut berikutnya otomatis tersarankan
 3. *(Opsional tapi disarankan)* Klik **Atur Folder Unduhan** dan pilih folder tujuan — sekali saja, akan diingat untuk sesi berikutnya
 4. Ambil bukti lewat **Tempel (Ctrl+V)**, **Upload File**, atau **Ambil dari Layar**
@@ -29,10 +29,10 @@ Dibangun sebagai **single-file HTML** — tidak perlu instalasi, tidak perlu ser
 ## Format Nama File
 
 ```
-{tanggal}.{nomor urut} · {jam mulai}-{jam selesai} · {judul kegiatan}.jpg
+{tanggal}.{nomor urut} - {jam mulai}-{jam selesai} - {judul kegiatan}.jpg
 ```
 
-Contoh: `25.2 · 08.00-09.30 · Rapat Koordinasi Renja.jpg`
+Contoh: `25.2 - 08.00-09.30 - Rapat Koordinasi Renja.jpg`
 
 ## Kompatibilitas Browser
 
@@ -63,6 +63,26 @@ Karena berupa file HTML tunggal, ESA bisa langsung dijalankan lokal (buka file d
 ## Privasi
 
 Semua pemrosesan (kompresi gambar, penamaan file, penulisan ke folder) terjadi sepenuhnya di browser pengguna. ESA tidak mengirim data, gambar, atau nama file ke server eksternal mana pun.
+
+### Counter akses pusat (opsional)
+
+Secara bawaan counter hanya menghitung di browser pengguna sendiri. Untuk melihat akses seluruh pengguna, pilih salah satu backend:
+
+**Opsi A — Vercel + Upstash Redis** (disarankan jika ESA sudah di-deploy di Vercel; satu domain, tanpa masalah CORS)
+
+1. Susun project: `esa.html` diganti nama jadi `index.html`, dan `api/counter.js` ditaruh di folder `api/` pada root project
+2. Di Vercel Dashboard → **Storage / Marketplace → Upstash Redis** → buat database lalu hubungkan ke project (variabel `UPSTASH_REDIS_REST_URL` dan `UPSTASH_REDIS_REST_TOKEN` terisi otomatis)
+3. Set `COUNTER_ENDPOINT = '/api/counter'` di bagian atas script, lalu redeploy
+
+> Fungsi Vercel tidak bisa menyimpan data di file karena filesystem-nya sementara, makanya counter memakai Redis eksternal.
+
+**Opsi B — Google Apps Script + Google Sheet**
+
+1. Buat Google Sheet baru → **Extensions → Apps Script**, tempel isi `counter-apps-script.gs`
+2. **Deploy → New deployment → Web app** (Execute as: *Me*, Who has access: *Anyone*)
+3. Salin URL `/exec`, lalu isi konstanta `COUNTER_ENDPOINT` di bagian atas script `esa.html`
+
+Kedua opsi hanya menerima waktu akses dan ID anonim acak — tidak ada nama, file, atau isi bukti dukung. Refresh dalam 30 menit tidak dihitung sebagai kunjungan baru. Endpoint tidak memakai autentikasi, jadi angkanya bisa digelembungkan oleh pihak yang sengaja memanggil URL-nya berulang kali; cukup untuk gambaran pemakaian internal, bukan untuk angka yang diaudit.
 
 ## Lisensi
 
