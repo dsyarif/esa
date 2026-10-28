@@ -390,7 +390,7 @@
       <h1>ESA</h1>
       <span class="full-name">E-Kinerja Screenshot Assistant</span>
     </div>
-    <p class="sub">Tempel, upload, atau ambil screenshot — otomatis dinamai per tanggal, dilengkapi jam kegiatan dan judul, lalu dikompres di bawah 500&nbsp;KB. Semua diproses langsung di browser kamu — berkas hanya disimpan di lokasi yang kamu pilih.</p>
+    <!-- <p class="sub">Tempel, upload, atau ambil screenshot — otomatis dinamai per tanggal, dilengkapi jam kegiatan dan judul, lalu dikompres di bawah 500&nbsp;KB. Semua diproses langsung di browser kamu — berkas hanya disimpan di lokasi yang kamu pilih.</p> -->
     <div class="visit-stats" id="visitStats"></div>
   </header>
 
@@ -406,16 +406,16 @@
       <output class="seq-preview dg-seq" id="seqPreview">—</output>
       <span class="date-label dg-note" id="dateLabel"></span>
     </div>
-    <p class="hint">Nomor ini otomatis dihitung dari nomor tertinggi yang sudah ada di folder unduhan + sesi berjalan untuk tanggal ini — jadi tetap aman meski ada kegiatan yang belum sempat di-screenshot (misal 25.1 masih kosong tapi 25.2 sudah ada). Nomor tiap item tetap bisa kamu ubah manual di kartu masing-masing.</p>
+    <!-- <p class="hint">Nomor ini otomatis dihitung dari nomor tertinggi yang sudah ada di folder unduhan + sesi berjalan untuk tanggal ini — jadi tetap aman meski ada kegiatan yang belum sempat di-screenshot (misal 25.1 masih kosong tapi 25.2 sudah ada). Nomor tiap item tetap bisa kamu ubah manual di kartu masing-masing.</p> -->
   </div>
 
   <div class="panel">
     <div class="panel-title"><span class="n">2</span>Lokasi Unduhan</div>
-    <div class="storage-tabs" role="tablist" aria-label="Pilih lokasi penyimpanan">
+    <!-- <div class="storage-tabs" role="tablist" aria-label="Pilih lokasi penyimpanan">
       <button type="button" class="stab active" data-tab="local" role="tab" aria-selected="true">💻 Drive Lokal</button>
       <button type="button" class="stab" data-tab="gdrive" role="tab" aria-selected="false">☁️ Google Drive</button>
       <button type="button" class="stab" data-tab="onedrive" role="tab" aria-selected="false">☁️ OneDrive</button>
-    </div>
+    </div> -->
     <div class="folder-row">
       <input type="text" id="cloudFolderName" class="cloud-folder" placeholder="Nama folder di cloud" maxlength="80" aria-label="Nama folder di cloud" style="display:none;">
       <button class="btn btn-ghost" id="btnChooseFolder">📂 Atur Folder Unduhan</button>
@@ -1246,9 +1246,9 @@ function storageDescribe(p){
 }
 
 const STORAGE_HINTS = {
-  local: 'Pilih folder di komputer. <b>Tips:</b> kalau foldernya berada di dalam Google Drive for desktop atau OneDrive yang sudah tersinkron, file otomatis ikut ter-upload ke cloud tanpa pengaturan tambahan. Folder diingat walau halaman di-refresh. Butuh Chrome/Edge; di browser lain file tetap terunduh ke folder Downloads.',
-  gdrive: 'Berkas diunggah langsung ke Google Drive kamu, ke folder bernama di atas (dibuat otomatis bila belum ada). ESA hanya bisa melihat berkas yang dibuatnya sendiri (izin <code>drive.file</code>), jadi file yang diunggah dengan cara lain tidak ikut tampil.',
-  onedrive: 'Berkas diunggah langsung ke OneDrive kamu, ke folder bernama di atas (dibuat otomatis saat berkas pertama disimpan). Login lewat jendela popup Microsoft — izinkan popup untuk situs ini.'
+  local: '',
+  gdrive: '',
+  onedrive: ''
 };
 
 // Menampilkan tab, label, tombol, dan petunjuk sesuai kondisi (tanpa memuat ulang isi folder)
