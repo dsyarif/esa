@@ -176,7 +176,37 @@
   .folder-label.set{color:var(--good);border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.06);}
   .folder-label.pending{color:var(--warn);border-color:rgba(251,191,36,0.35);background:rgba(251,191,36,0.06);}
 
+  .storage-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .stab{
+    appearance:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;
+    padding:8px 14px;border-radius:999px;background:var(--bg-1);color:var(--text-dim);
+    border:1px solid var(--line);transition:border-color .15s ease, color .15s ease;
+  }
+  .stab:hover{border-color:var(--violet-dim);color:var(--text);}
+  .stab.active{background:linear-gradient(135deg, var(--violet), var(--violet-dim));color:#fff;border-color:transparent;}
+  input.cloud-folder{min-width:200px;flex:0 1 240px;}
+  .hint code{background:rgba(139,92,246,0.12);border-radius:4px;padding:0 4px;font-size:11.5px;}
+  .hint-warn{display:block;margin-top:6px;color:var(--warn);}
+
   .folder-files{margin-top:14px;}
+  .table-scroll{overflow-x:auto;}
+  .table-inner{min-width:800px;}
+  .fthumb{
+    width:44px;height:32px;border-radius:6px;overflow:hidden;background:#000;
+    border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+    font-size:13px;color:var(--text-faint);cursor:zoom-in;
+  }
+  .fthumb:hover, .fthumb:focus-visible{border-color:var(--violet);outline:none;}
+  .fthumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .lightbox-nav{
+    position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;
+    border:1px solid var(--line);background:var(--panel);color:var(--text);
+    font-size:26px;line-height:1;cursor:pointer;
+  }
+  .lightbox-nav:hover{border-color:var(--violet);}
+  .lightbox-nav.prev{left:16px;}
+  .lightbox-nav.next{right:16px;}
+  .lightbox-count{font-size:12px;color:var(--text-faint);}
   .folder-files-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .folder-files-head span{font-size:12.5px;color:var(--text-dim);font-weight:500;}
   select.date-filter{
@@ -187,7 +217,7 @@
   .file-table{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;}
   .file-head-row, .file-row{
     display:grid;
-    grid-template-columns:56px 84px 84px 78px 1fr 56px 60px;
+    grid-template-columns:46px 52px 78px 78px 92px 48px 1fr 56px 84px;
     gap:8px;align-items:center;
   }
   .file-head-row{
@@ -210,6 +240,7 @@
     border-radius:5px;padding:1px 5px;text-transform:none;
   }
   .file-row .col-duration{color:var(--text-dim);font-size:12px;white-space:nowrap;}
+  .file-row .col-point{color:var(--pink);font-weight:700;font-size:12.5px;font-family:'Space Grotesk',sans-serif;}
   .file-empty{font-size:13px;color:var(--text-faint);padding:10px 2px;}
 
   .file-row.edit-row{display:flex;flex-direction:column;gap:10px;padding:14px;border-color:var(--violet-dim);}
@@ -302,11 +333,18 @@
     border:1px solid rgba(139,92,246,0.25);border-radius:9px;
     padding:9px 12px;white-space:nowrap;
   }
+  .point-tag{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;
+    color:var(--pink);background:rgba(232,121,185,0.10);
+    border:1px solid rgba(232,121,185,0.30);border-radius:9px;
+    padding:9px 12px;white-space:nowrap;min-width:48px;text-align:center;
+  }
   .folder-total{
     display:flex;justify-content:flex-end;margin-top:8px;
     font-size:12.5px;color:var(--text-dim);
   }
   .folder-total b{color:var(--violet-2);font-family:'Space Grotesk',sans-serif;}
+  .folder-total b.total-point{color:var(--pink);}
   .hm-group{display:flex;align-items:center;gap:4px;}
   .hm-group input[type=number]{width:48px;text-align:center;padding:9px 6px;}
   .hm-group span{color:var(--text-faint);font-weight:600;}
@@ -352,7 +390,7 @@
       <h1>ESA</h1>
       <span class="full-name">E-Kinerja Screenshot Assistant</span>
     </div>
-    <p class="sub">Tempel, upload, atau ambil screenshot — otomatis dinamai per tanggal, dilengkapi jam kegiatan dan judul, lalu dikompres di bawah 500&nbsp;KB. Semua diproses langsung di browser kamu, tidak diunggah ke server mana pun.</p>
+    <p class="sub">Tempel, upload, atau ambil screenshot — otomatis dinamai per tanggal, dilengkapi jam kegiatan dan judul, lalu dikompres di bawah 500&nbsp;KB. Semua diproses langsung di browser kamu — berkas hanya disimpan di lokasi yang kamu pilih.</p>
     <div class="visit-stats" id="visitStats"></div>
   </header>
 
@@ -373,12 +411,18 @@
 
   <div class="panel">
     <div class="panel-title"><span class="n">2</span>Lokasi Unduhan</div>
+    <div class="storage-tabs" role="tablist" aria-label="Pilih lokasi penyimpanan">
+      <button type="button" class="stab active" data-tab="local" role="tab" aria-selected="true">💻 Drive Lokal</button>
+      <button type="button" class="stab" data-tab="gdrive" role="tab" aria-selected="false">☁️ Google Drive</button>
+      <button type="button" class="stab" data-tab="onedrive" role="tab" aria-selected="false">☁️ OneDrive</button>
+    </div>
     <div class="folder-row">
+      <input type="text" id="cloudFolderName" class="cloud-folder" placeholder="Nama folder di cloud" maxlength="80" aria-label="Nama folder di cloud" style="display:none;">
       <button class="btn btn-ghost" id="btnChooseFolder">📂 Atur Folder Unduhan</button>
       <span class="folder-label" id="folderLabel">Belum diatur — unduhan akan memakai folder default browser (biasanya langsung tanpa dialog)</span>
       <button class="btn btn-danger" id="btnClearFolder" style="display:none;">Lepas Folder</button>
     </div>
-    <p class="hint">Sekali diatur, folder ini <b>diingat otomatis</b> walau halaman di-refresh atau ditutup — tidak perlu pilih ulang tiap kali buka ESA. Fitur ini hanya didukung Chrome/Edge; di browser lain file tetap terunduh ke folder Downloads default.</p>
+    <p class="hint" id="storageHint"></p>
 
     <div class="folder-files" id="folderFilesSection" style="display:none;">
       <div class="folder-files-head">
@@ -392,10 +436,14 @@
           <button class="btn btn-ghost" id="btnRefreshFolder" style="padding:6px 12px;font-size:12px;">🔄 Muat Ulang</button>
         </div>
       </div>
-      <div class="file-head-row">
-        <span>No.</span><span>Mulai</span><span>Selesai</span><span>Durasi</span><span>Judul Kegiatan</span><span>Ext</span><span>Aksi</span>
+      <div class="table-scroll">
+        <div class="table-inner">
+          <div class="file-head-row">
+            <span></span><span>No.</span><span>Mulai</span><span>Selesai</span><span>Durasi</span><span>Poin</span><span>Judul Kegiatan</span><span>Ext</span><span>Aksi</span>
+          </div>
+          <div class="file-table" id="fileList"></div>
+        </div>
       </div>
-      <div class="file-table" id="fileList"></div>
       <div class="folder-total" id="folderTotal"></div>
     </div>
   </div>
@@ -442,11 +490,23 @@
 
 <div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="Pratinjau bukti dukung">
   <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Tutup pratinjau">✕</button>
+  <button class="lightbox-nav prev" id="lightboxPrev" type="button" aria-label="Sebelumnya">‹</button>
+  <button class="lightbox-nav next" id="lightboxNext" type="button" aria-label="Berikutnya">›</button>
   <img id="lightboxImg" alt="Pratinjau bukti dukung">
   <div class="lightbox-caption" id="lightboxCaption"></div>
+  <div class="lightbox-count" id="lightboxCount"></div>
 </div>
 
 <script>
+// Halaman ini juga menjadi tujuan redirect login Microsoft (jendela popup).
+// Di mode itu cukup kirim kode login ke jendela utama, tanpa memuat aplikasi.
+const IS_AUTH_POPUP = !!window.opener && /[?&](code|error)=/.test(location.search) && /[?&]state=/.test(location.search);
+if(IS_AUTH_POPUP){
+  const q = new URLSearchParams(location.search);
+  try{ window.opener.postMessage({ type: 'esa-ms-code', code: q.get('code'), state: q.get('state'), error: q.get('error'), error_description: q.get('error_description') }, location.origin); } catch(e){ /* jendela utama membaca alamat popup sendiri */ }
+  setTimeout(() => { try{ window.close(); } catch(e){ /* abaikan */ } }, 150);
+}
+
 const MAX_BYTES = 500 * 1024; // 500 KB
 const DB_NAME = 'esa-store';
 const STORE_NAME = 'kv';
@@ -458,6 +518,7 @@ const STATS_KEY = 'visitStats';
 // Kosongkan untuk memakai counter lokal saja (hanya menghitung di perangkat/browser ini).
 const COUNTER_ENDPOINT = '/api/counter';
 const VISIT_GAP_MS = 30 * 60 * 1000; // refresh dalam 30 menit dihitung sebagai kunjungan yang sama
+const MENIT_PER_POIN = 60; // 60 menit durasi = 1 poin (ubah angka ini bila konversinya berbeda)
 
 const dateInput = document.getElementById('dateInput');
 const seqPreview = document.getElementById('seqPreview');
@@ -489,8 +550,7 @@ const folderTotal = document.getElementById('folderTotal');
 let entries = []; // {id, blob, url, day, seq, title, startTime, endTime, sizeBytes, processing, savedToFolder}
 let idCounter = 0;
 let mediaStream = null;
-let downloadDirHandle = null;
-let pendingHandle = null;
+// (lokasi penyimpanan aktif: lihat variabel `storage` di bagian "Lokasi penyimpanan")
 let folderFilesCache = []; // parsed records dari folder aktif
 let editingFile = null; // nama file yang sedang diedit di tabel folder
 let dateFilter = ''; // filter tabel folder berdasarkan tanggal (hari) — '' = semua
@@ -552,6 +612,9 @@ window.addEventListener('focus', syncTodayIfNeeded);
 updateDateLabel();
 updateSeqPreview();
 
+function escHtml(s){
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 function fmtSize(bytes){
   if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' KB';
   return (bytes/(1024*1024)).toFixed(2) + ' MB';
@@ -592,6 +655,15 @@ function durationLabel(start, end){
   const mins = durationMinutes(start, end);
   return mins === null ? 'Tidak valid' : fmtDuration(mins);
 }
+// Poin = durasi (menit) / MENIT_PER_POIN. Contoh: 60 menit = 1, 90 menit = 1,5, 45 menit = 0,75
+function fmtPoint(totalMinutes){
+  if(totalMinutes === null || totalMinutes === undefined) return '—';
+  return (totalMinutes / MENIT_PER_POIN).toLocaleString('id-ID', { maximumFractionDigits: 2 });
+}
+function pointLabel(start, end){
+  if(!start || !end) return '—';
+  return fmtPoint(durationMinutes(start, end));
+}
 function updateTimeWarnUI(entry, fromInput){
   const row = fromInput.closest('.time-row');
   if(!row) return;
@@ -599,6 +671,8 @@ function updateTimeWarnUI(entry, fromInput){
   row.classList.toggle('time-warn', !!warn);
   const tag = row.querySelector('.duration-tag');
   if(tag) tag.textContent = durationLabel(entry.startTime, entry.endTime);
+  const ptag = row.querySelector('.point-tag');
+  if(ptag) ptag.textContent = pointLabel(entry.startTime, entry.endTime);
 }
 
 async function compressImage(blob, maxBytes){
@@ -669,6 +743,10 @@ function renderItems(){
           <div class="field">
             <label>Durasi</label>
             <div class="duration-tag">${durationLabel(entry.startTime, entry.endTime)}</div>
+          </div>
+          <div class="field">
+            <label>Poin</label>
+            <div class="point-tag">${pointLabel(entry.startTime, entry.endTime)}</div>
           </div>
         </div>
         <input type="text" placeholder="Judul kegiatan…" value="${entry.title.replace(/"/g,'&quot;')}" data-id="${entry.id}" class="titleInput">
@@ -776,83 +854,473 @@ async function idbDel(key){
   });
 }
 
-// --- Folder handling ---
-async function initFolder(){
-  if(!('indexedDB' in window) || !window.showDirectoryPicker) return;
-  try{
-    const handle = await idbGet(FOLDER_KEY);
-    if(!handle) return;
-    const perm = await handle.queryPermission({ mode: 'readwrite' });
-    if(perm === 'granted'){
-      downloadDirHandle = handle;
-      updateFolderLabel();
-    } else {
-      pendingHandle = handle;
-      updateFolderLabel();
-    }
-  } catch(err){ /* folder lama tidak valid / DB kosong */ }
+// ===== Lokasi penyimpanan: Drive lokal / Google Drive / OneDrive =====
+// Semua operasi folder lewat satu antarmuka "provider": list, read, write, remove, rename.
+// Client ID hanya dibutuhkan untuk Google Drive / OneDrive (lihat README bagian "Menyimpan ke Google Drive / OneDrive").
+// Bisa diisi di sini, atau dengan mendefinisikan window.ESA_CONFIG = { googleClientId: '...', msClientId: '...' } di blok script lain sebelum script utama.
+const ESA_CONFIG = window.ESA_CONFIG || {};
+const GOOGLE_CLIENT_ID = ESA_CONFIG.googleClientId || '';
+const MS_CLIENT_ID = ESA_CONFIG.msClientId || '';
+const DEFAULT_CLOUD_FOLDER = 'ESA Bukti Dukung';
+const CFG_KEY = 'storageCfg';
+
+const cloudFolderName = document.getElementById('cloudFolderName');
+const storageHint = document.getElementById('storageHint');
+
+let storage = null;        // provider aktif (null = unduhan biasa browser)
+let pendingStorage = null; // provider tersimpan yang masih butuh izin / masuk ulang
+let storageTab = 'local';  // tab yang sedang dipilih: local | gdrive | onedrive
+
+const scriptPromises = {};
+function loadScriptOnce(src){
+  if(!scriptPromises[src]){
+    scriptPromises[src] = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src; s.async = true;
+      s.onload = () => resolve();
+      s.onerror = () => { delete scriptPromises[src]; reject(new Error('Gagal memuat ' + src + ' (periksa koneksi internet)')); };
+      document.head.appendChild(s);
+    });
+  }
+  return scriptPromises[src];
 }
 
-btnChooseFolder.addEventListener('click', async () => {
-  if(pendingHandle){
-    try{
-      const perm = await pendingHandle.requestPermission({ mode: 'readwrite' });
-      if(perm === 'granted'){
-        downloadDirHandle = pendingHandle;
-        pendingHandle = null;
-        updateFolderLabel();
+function randomString(len){
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  const a = new Uint8Array(len);
+  crypto.getRandomValues(a);
+  return Array.from(a, x => chars[x % chars.length]).join('');
+}
+async function pkceChallenge(verifier){
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function cloudFolderSafe(name){
+  return String(name || '').replace(/[\\\/:*?"<>|#%]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+}
+let lastStorageAlert = 0;
+function alertStorageError(msg){
+  const now = Date.now();
+  if(now - lastStorageAlert < 4000) return; // hindari alert beruntun saat simpan banyak berkas
+  lastStorageAlert = now;
+  alert(msg);
+}
+
+// --- Provider: Drive lokal (File System Access API) ---
+function makeLocalProvider(dirHandle){
+  return {
+    id: 'local', title: 'Drive lokal', folderName: dirHandle.name, canDetectFormat: true, dirHandle,
+    async ensureAccess(){
+      let perm = await dirHandle.queryPermission({ mode: 'readwrite' });
+      if(perm !== 'granted') perm = await dirHandle.requestPermission({ mode: 'readwrite' });
+      if(perm !== 'granted') throw new Error('Izin akses folder ditolak');
+    },
+    async connect(){ await this.ensureAccess(); },
+    async list(){
+      const out = [];
+      for await (const [name, h] of dirHandle.entries()){
+        if(h.kind !== 'file') continue;
+        let size = null, actualFormat = 'unknown';
+        try{
+          const f = await h.getFile();
+          size = f.size;
+          actualFormat = await detectActualFormat(f);
+        } catch(e){ /* abaikan */ }
+        out.push({ name, size, ref: h, actualFormat });
+      }
+      return out;
+    },
+    async read(rec){ return rec.ref.getFile(); },
+    async write(name, blob){
+      await this.ensureAccess();
+      const fh = await dirHandle.getFileHandle(name, { create: true });
+      const w = await fh.createWritable();
+      await w.write(blob);
+      await w.close();
+    },
+    async remove(rec){ await dirHandle.removeEntry(rec.name); },
+    async rename(rec, newName){
+      const f = await rec.ref.getFile();
+      await this.write(newName, f);
+      await dirHandle.removeEntry(rec.name);
+    }
+  };
+}
+
+// --- Provider: Google Drive (REST API + Google Identity Services, izin drive.file) ---
+function makeGDriveProvider(folderName){
+  const API = 'https://www.googleapis.com/drive/v3';
+  const UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
+  let token = null, expiresAt = 0, folderId = null;
+  const esc = s => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+  async function getToken(){
+    if(token && Date.now() < expiresAt - 60000) return token;
+    if(!GOOGLE_CLIENT_ID) throw new Error('GOOGLE_CLIENT_ID belum diisi (lihat README)');
+    await loadScriptOnce('https://accounts.google.com/gsi/client');
+    return new Promise((resolve, reject) => {
+      const tc = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        callback: resp => {
+          if(resp.error) return reject(new Error('Login Google gagal: ' + (resp.error_description || resp.error)));
+          token = resp.access_token;
+          expiresAt = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
+          resolve(token);
+        },
+        error_callback: err => reject(new Error('Login Google dibatalkan atau diblokir (' + ((err && err.type) || 'error') + ')'))
+      });
+      tc.requestAccessToken({});
+    });
+  }
+  async function api(url, opts = {}, retry = true){
+    const t = await getToken();
+    const res = await fetch(url, { ...opts, headers: { ...(opts.headers || {}), Authorization: 'Bearer ' + t } });
+    if(res.status === 401 && retry){ token = null; return api(url, opts, false); }
+    if(!res.ok){
+      let msg = '';
+      try{ msg = (await res.json()).error.message; } catch(e){ /* abaikan */ }
+      throw new Error('Google Drive ' + res.status + (msg ? ': ' + msg : ''));
+    }
+    return res;
+  }
+  async function ensureFolder(){
+    if(folderId) return folderId;
+    const query = `name='${esc(folderName)}' and mimeType='application/vnd.google-apps.folder' and 'root' in parents and trashed=false`;
+    const res = await api(`${API}/files?q=${encodeURIComponent(query)}&fields=files(id,name)&pageSize=10`);
+    const data = await res.json();
+    if(data.files && data.files.length){ folderId = data.files[0].id; return folderId; }
+    const created = await api(`${API}/files?fields=id`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: folderName, mimeType: 'application/vnd.google-apps.folder', parents: ['root'] })
+    });
+    folderId = (await created.json()).id;
+    return folderId;
+  }
+  async function findByName(name){
+    const fid = await ensureFolder();
+    const query = `name='${esc(name)}' and '${fid}' in parents and trashed=false`;
+    const res = await api(`${API}/files?q=${encodeURIComponent(query)}&fields=files(id)&pageSize=10`);
+    return (await res.json()).files || [];
+  }
+  const trash = id => api(`${API}/files/${id}?fields=id`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trashed: true })
+  });
+
+  return {
+    id: 'gdrive', title: 'Google Drive', folderName, canDetectFormat: false,
+    async connect(){ await getToken(); await ensureFolder(); },
+    async list(){
+      const fid = await ensureFolder();
+      const out = [];
+      let pageToken = '';
+      do{
+        const query = `'${fid}' in parents and trashed=false`;
+        const res = await api(`${API}/files?q=${encodeURIComponent(query)}&fields=${encodeURIComponent('nextPageToken,files(id,name,size)')}&pageSize=1000${pageToken ? '&pageToken=' + encodeURIComponent(pageToken) : ''}`);
+        const data = await res.json();
+        (data.files || []).forEach(f => out.push({ name: f.name, size: f.size !== undefined ? Number(f.size) : null, ref: { id: f.id }, actualFormat: 'unknown' }));
+        pageToken = data.nextPageToken || '';
+      } while(pageToken);
+      return out;
+    },
+    async read(rec){ return (await api(`${API}/files/${rec.ref.id}?alt=media`)).blob(); },
+    async write(name, blob){
+      const fid = await ensureFolder();
+      const type = blob.type || 'application/octet-stream';
+      const existing = await findByName(name);
+      if(existing.length){
+        await api(`${UPLOAD}/files/${existing[0].id}?uploadType=media`, { method: 'PATCH', headers: { 'Content-Type': type }, body: blob });
+        for(const dup of existing.slice(1)) await trash(dup.id); // rapikan duplikat bernama sama
         return;
       }
+      const boundary = 'esa' + Math.random().toString(36).slice(2);
+      const meta = JSON.stringify({ name, parents: [fid] });
+      const body = new Blob([
+        `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${boundary}\r\nContent-Type: ${type}\r\n\r\n`,
+        blob,
+        `\r\n--${boundary}--`
+      ]);
+      await api(`${UPLOAD}/files?uploadType=multipart&fields=id`, { method: 'POST', headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body });
+    },
+    async remove(rec){ await trash(rec.ref.id); },
+    async rename(rec, newName){
+      const clash = (await findByName(newName)).filter(f => f.id !== rec.ref.id);
+      for(const c of clash) await trash(c.id);
+      await api(`${API}/files/${rec.ref.id}?fields=id`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName }) });
+    }
+  };
+}
+
+// --- Provider: OneDrive (Microsoft Graph + OAuth code flow dengan PKCE, tanpa pustaka tambahan) ---
+function makeOneDriveProvider(folderName){
+  const GRAPH = 'https://graph.microsoft.com/v1.0';
+  const AUTH = 'https://login.microsoftonline.com/common/oauth2/v2.0';
+  const SCOPE = 'Files.ReadWrite';
+  const folderPath = `${GRAPH}/me/drive/root:/${encodeURIComponent(folderName)}`;
+  let token = null, expiresAt = 0;
+
+  async function getToken(){
+    if(token && Date.now() < expiresAt - 60000) return token;
+    if(!MS_CLIENT_ID) throw new Error('MS_CLIENT_ID belum diisi (lihat README)');
+    const redirectUri = location.origin + location.pathname;
+    const verifier = randomString(64);
+    const challenge = await pkceChallenge(verifier);
+    const state = randomString(16);
+    const authUrl = AUTH + '/authorize?' + new URLSearchParams({
+      client_id: MS_CLIENT_ID, response_type: 'code', redirect_uri: redirectUri, response_mode: 'query',
+      scope: SCOPE, state, code_challenge: challenge, code_challenge_method: 'S256'
+    });
+    const code = await new Promise((resolve, reject) => {
+      const popup = window.open(authUrl, 'esa-ms-auth', 'width=520,height=680');
+      if(!popup){ reject(new Error('Popup diblokir browser — izinkan popup untuk situs ini lalu coba lagi')); return; }
+      let done = false;
+      const finish = (fn, val) => { if(done) return; done = true; cleanup(); fn(val); };
+      const handle = d => {
+        if(d.state !== state) return finish(reject, new Error('Login Microsoft gagal: state tidak cocok'));
+        if(d.error) return finish(reject, new Error('Login Microsoft gagal: ' + (d.error_description || d.error)));
+        finish(resolve, d.code);
+      };
+      const onMsg = ev => {
+        if(ev.origin !== location.origin || !ev.data || ev.data.type !== 'esa-ms-code') return;
+        handle(ev.data);
+      };
+      const timer = setInterval(() => {
+        try{ // saat popup kembali ke halaman ini (same-origin), alamatnya bisa dibaca
+          const loc = popup.location;
+          if(loc.origin === location.origin && /[?&](code|error)=/.test(loc.search)){
+            const q = new URLSearchParams(loc.search);
+            try{ popup.close(); } catch(e){ /* abaikan */ }
+            return handle({ code: q.get('code'), state: q.get('state'), error: q.get('error'), error_description: q.get('error_description') });
+          }
+        } catch(e){ /* masih di halaman login Microsoft (cross-origin) */ }
+        if(popup.closed) setTimeout(() => finish(reject, new Error('Login dibatalkan')), 800);
+      }, 250);
+      function cleanup(){ window.removeEventListener('message', onMsg); clearInterval(timer); }
+      window.addEventListener('message', onMsg);
+    });
+    const res = await fetch(AUTH + '/token', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: MS_CLIENT_ID, scope: SCOPE, code, redirect_uri: redirectUri, grant_type: 'authorization_code', code_verifier: verifier })
+    });
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok || !data.access_token) throw new Error('Login Microsoft gagal: ' + (data.error_description || data.error || res.status));
+    token = data.access_token;
+    expiresAt = Date.now() + (Number(data.expires_in) || 3600) * 1000;
+    return token;
+  }
+  async function api(url, opts = {}, flags = {}, retry = true){
+    const t = await getToken();
+    const res = await fetch(url, { ...opts, headers: { ...(opts.headers || {}), Authorization: 'Bearer ' + t } });
+    if(res.status === 401 && retry){ token = null; return api(url, opts, flags, false); }
+    if(!res.ok && !(flags.allow404 && res.status === 404)){
+      let msg = '';
+      try{ msg = (await res.json()).error.message; } catch(e){ /* abaikan */ }
+      throw new Error('OneDrive ' + res.status + (msg ? ': ' + msg : ''));
+    }
+    return res;
+  }
+
+  return {
+    id: 'onedrive', title: 'OneDrive', folderName, canDetectFormat: false,
+    async connect(){ await getToken(); },
+    async list(){
+      const out = [];
+      let url = `${folderPath}:/children?$select=id,name,size,file&$top=500`;
+      while(url){
+        const res = await api(url, {}, { allow404: true });
+        if(res.status === 404) return []; // folder belum dibuat
+        const data = await res.json();
+        (data.value || []).filter(i => i.file).forEach(i => out.push({ name: i.name, size: i.size, ref: { id: i.id }, actualFormat: 'unknown' }));
+        url = data['@odata.nextLink'] || '';
+      }
+      return out;
+    },
+    async read(rec){ return (await api(`${GRAPH}/me/drive/items/${rec.ref.id}/content`)).blob(); },
+    async write(name, blob){
+      await api(`${folderPath}/${encodeURIComponent(name)}:/content?@microsoft.graph.conflictBehavior=replace`, {
+        method: 'PUT', headers: { 'Content-Type': blob.type || 'application/octet-stream' }, body: blob
+      });
+    },
+    async remove(rec){ await api(`${GRAPH}/me/drive/items/${rec.ref.id}`, { method: 'DELETE' }); },
+    async rename(rec, newName){
+      const existing = await api(`${folderPath}/${encodeURIComponent(newName)}`, {}, { allow404: true });
+      if(existing.status !== 404){
+        const item = await existing.json();
+        if(item.id && item.id !== rec.ref.id) await this.remove({ ref: { id: item.id } });
+      }
+      await api(`${GRAPH}/me/drive/items/${rec.ref.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName }) });
+    }
+  };
+}
+
+// --- Memilih / menghubungkan lokasi ---
+async function saveStorageCfg(cfg){ try{ await idbSet(CFG_KEY, cfg); } catch(e){ console.warn('Gagal menyimpan pengaturan lokasi', e); } }
+
+async function useLocalDirHandle(handle, opts = {}){
+  storage = makeLocalProvider(handle);
+  pendingStorage = null;
+  storageTab = 'local';
+  if(opts.persist !== false){
+    try{ await idbSet(FOLDER_KEY, handle); } catch(e){ console.warn('Gagal menyimpan folder untuk sesi berikutnya', e); }
+    await saveStorageCfg({ type: 'local' });
+  }
+  updateFolderLabel();
+}
+
+async function chooseLocalFolder(){
+  if(pendingStorage && pendingStorage.id === 'local'){
+    try{
+      await pendingStorage.ensureAccess();
+      storage = pendingStorage; pendingStorage = null;
+      updateFolderLabel();
+      return;
     } catch(err){ /* lanjut ke pemilihan folder baru */ }
   }
   if(!window.showDirectoryPicker){
     alert('Browser ini tidak mendukung pemilihan folder otomatis (fitur ini butuh Chrome/Edge terbaru). File akan tetap terunduh ke folder Downloads default browser.');
     return;
   }
+  const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+  await makeLocalProvider(handle).ensureAccess();
+  await useLocalDirHandle(handle);
+}
+
+async function connectCloud(type){
+  const label = type === 'gdrive' ? 'Google Drive' : 'OneDrive';
+  const clientId = type === 'gdrive' ? GOOGLE_CLIENT_ID : MS_CLIENT_ID;
+  if(!clientId){
+    alert(`${label} belum bisa dipakai di versi ini karena Client ID belum diisi.\n\nLangkah singkatnya ada di README (bagian "Menyimpan ke Google Drive / OneDrive").\n\nSebagai jalan pintas: pakai tab "Drive Lokal" lalu pilih folder yang sudah tersinkron oleh aplikasi ${label} di komputer — file otomatis ikut ke cloud.`);
+    return;
+  }
+  const name = cloudFolderSafe(cloudFolderName.value) || DEFAULT_CLOUD_FOLDER;
+  cloudFolderName.value = name;
+  const provider = type === 'gdrive' ? makeGDriveProvider(name) : makeOneDriveProvider(name);
+  btnChooseFolder.disabled = true;
+  btnChooseFolder.textContent = '⏳ Menghubungkan…';
   try{
-    const handle = await window.showDirectoryPicker();
-    const perm = await handle.requestPermission({ mode: 'readwrite' });
-    if(perm !== 'granted'){ alert('Izin akses folder ditolak.'); return; }
-    downloadDirHandle = handle;
-    pendingHandle = null;
-    updateFolderLabel();
-    try{ await idbSet(FOLDER_KEY, handle); } catch(e){ console.warn('Gagal menyimpan folder untuk sesi berikutnya', e); }
-  } catch(err){ /* dibatalkan */ }
+    await provider.connect();
+  } finally {
+    btnChooseFolder.disabled = false;
+  }
+  storage = provider; pendingStorage = null; storageTab = type;
+  await saveStorageCfg({ type, folderName: name });
+  updateFolderLabel();
+}
+
+btnChooseFolder.addEventListener('click', async () => {
+  try{
+    if(storageTab === 'local') await chooseLocalFolder();
+    else await connectCloud(storageTab);
+  } catch(err){
+    renderStorageUI();
+    if(err && err.name === 'AbortError') return; // pemilihan folder dibatalkan
+    console.error(err);
+    alert((err && err.message) || String(err));
+  }
 });
 
 btnClearFolder.addEventListener('click', async () => {
-  downloadDirHandle = null;
-  pendingHandle = null;
+  storage = null;
+  pendingStorage = null;
+  clearFolderThumbs();
   folderFilesCache = [];
   editingFile = null;
   dateFilter = '';
   updateFolderLabel();
   updateSeqPreview();
-  try{ await idbDel(FOLDER_KEY); } catch(e){ /* abaikan */ }
+  try{ await idbDel(FOLDER_KEY); await idbDel(CFG_KEY); } catch(e){ /* abaikan */ }
 });
 
-function updateFolderLabel(){
-  if(downloadDirHandle){
-    folderLabel.textContent = `📁 ${downloadDirHandle.name}`;
+document.querySelectorAll('.stab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    storageTab = tab.dataset.tab;
+    if(storageTab !== 'local' && !cloudFolderName.value) cloudFolderName.value = DEFAULT_CLOUD_FOLDER;
+    if(storageTab === 'gdrive' && GOOGLE_CLIENT_ID) loadScriptOnce('https://accounts.google.com/gsi/client').catch(() => {}); // siapkan lebih awal agar popup login tidak terblokir
+    renderStorageUI();
+  });
+});
+
+function storageDescribe(p){
+  if(p.id === 'local') return `📁 ${p.folderName}`;
+  return `☁️ ${p.title} › ${p.folderName}`;
+}
+
+const STORAGE_HINTS = {
+  local: 'Pilih folder di komputer. <b>Tips:</b> kalau foldernya berada di dalam Google Drive for desktop atau OneDrive yang sudah tersinkron, file otomatis ikut ter-upload ke cloud tanpa pengaturan tambahan. Folder diingat walau halaman di-refresh. Butuh Chrome/Edge; di browser lain file tetap terunduh ke folder Downloads.',
+  gdrive: 'Berkas diunggah langsung ke Google Drive kamu, ke folder bernama di atas (dibuat otomatis bila belum ada). ESA hanya bisa melihat berkas yang dibuatnya sendiri (izin <code>drive.file</code>), jadi file yang diunggah dengan cara lain tidak ikut tampil.',
+  onedrive: 'Berkas diunggah langsung ke OneDrive kamu, ke folder bernama di atas (dibuat otomatis saat berkas pertama disimpan). Login lewat jendela popup Microsoft — izinkan popup untuk situs ini.'
+};
+
+// Menampilkan tab, label, tombol, dan petunjuk sesuai kondisi (tanpa memuat ulang isi folder)
+function renderStorageUI(){
+  document.querySelectorAll('.stab').forEach(t => {
+    const on = t.dataset.tab === storageTab;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  const isCloudTab = storageTab !== 'local';
+  cloudFolderName.style.display = isCloudTab ? '' : 'none';
+
+  let hint = STORAGE_HINTS[storageTab];
+  const missing = storageTab === 'gdrive' ? !GOOGLE_CLIENT_ID : storageTab === 'onedrive' ? !MS_CLIENT_ID : false;
+  if(missing) hint += ' <span class="hint-warn">⚠ Client ID belum diisi di versi ini, jadi opsi ini belum aktif — lihat README, atau pakai Drive Lokal pada folder yang tersinkron.</span>';
+  storageHint.innerHTML = hint;
+
+  const activeHere = storage && storage.id === storageTab;
+  const pendingHere = pendingStorage && pendingStorage.id === storageTab;
+  if(storageTab === 'local'){
+    btnChooseFolder.textContent = pendingHere ? '🔓 Aktifkan Folder Tersimpan' : (activeHere ? '📂 Ganti Folder' : '📂 Atur Folder Unduhan');
+  } else {
+    btnChooseFolder.textContent = pendingHere ? '🔓 Masuk & Aktifkan' : (activeHere ? '🔗 Hubungkan Ulang' : '🔗 Hubungkan');
+  }
+
+  if(storage){
+    folderLabel.textContent = storageDescribe(storage);
     folderLabel.className = 'folder-label set';
-    btnChooseFolder.textContent = '📂 Ganti Folder';
     btnClearFolder.style.display = 'inline-flex';
     folderFilesSection.style.display = 'block';
-    refreshFolderFiles();
-  } else if(pendingHandle){
-    folderLabel.textContent = `📁 ${pendingHandle.name} (tersimpan — klik "Aktifkan" untuk memberi izin lagi)`;
+  } else if(pendingStorage){
+    folderLabel.textContent = `${storageDescribe(pendingStorage)} (tersimpan — klik "${pendingStorage.id === 'local' ? 'Aktifkan' : 'Masuk'}" untuk melanjutkan)`;
     folderLabel.className = 'folder-label pending';
-    btnChooseFolder.textContent = '🔓 Aktifkan Folder Tersimpan';
     btnClearFolder.style.display = 'inline-flex';
     folderFilesSection.style.display = 'none';
   } else {
     folderLabel.textContent = 'Belum diatur — unduhan akan memakai folder default browser (biasanya langsung tanpa dialog)';
     folderLabel.className = 'folder-label';
-    btnChooseFolder.textContent = '📂 Atur Folder Unduhan';
     btnClearFolder.style.display = 'none';
     folderFilesSection.style.display = 'none';
     fileList.innerHTML = '';
+    folderTotal.textContent = '';
   }
+}
+
+function updateFolderLabel(){
+  renderStorageUI();
+  if(storage) refreshFolderFiles();
+}
+
+async function initStorage(){
+  let cfg = null;
+  try{ cfg = await idbGet(CFG_KEY); } catch(e){ /* IndexedDB tidak tersedia */ }
+  if(cfg && (cfg.type === 'gdrive' || cfg.type === 'onedrive')){
+    const name = cloudFolderSafe(cfg.folderName) || DEFAULT_CLOUD_FOLDER;
+    storageTab = cfg.type;
+    cloudFolderName.value = name;
+    pendingStorage = cfg.type === 'gdrive' ? makeGDriveProvider(name) : makeOneDriveProvider(name);
+    renderStorageUI();
+    return;
+  }
+  if('indexedDB' in window && window.showDirectoryPicker){
+    try{
+      const handle = await idbGet(FOLDER_KEY);
+      if(handle){
+        const p = makeLocalProvider(handle);
+        const perm = await handle.queryPermission({ mode: 'readwrite' });
+        if(perm === 'granted') storage = p; else pendingStorage = p;
+      }
+    } catch(err){ /* folder lama tidak valid / DB kosong */ }
+  }
+  updateFolderLabel();
 }
 
 // name -> {name, size, day, seq, start, end, title, ext}
@@ -911,29 +1379,81 @@ async function copyText(btn, text){
   setTimeout(() => { btn.textContent = original; }, 900);
 }
 
+// --- Thumbnail & pratinjau gambar di tabel isi folder ---
+function clearFolderThumbs(){
+  folderFilesCache.forEach(r => {
+    r._stale = true;
+    if(r.thumbUrl){ URL.revokeObjectURL(r.thumbUrl); r.thumbUrl = null; }
+  });
+  thumbQueue.length = 0;
+}
+const thumbQueue = [];
+let thumbActive = 0;
+let thumbObserver = null;
+
+// Membaca berkas dari lokasi aktif (sekali saja per berkas) dan menyimpannya sebagai object URL
+function loadThumbFor(rec){
+  if(rec.thumbUrl) return Promise.resolve(rec.thumbUrl);
+  if(!rec._thumbPromise){
+    rec._thumbPromise = (async () => {
+      const blob = await storage.read(rec);
+      const url = URL.createObjectURL(blob);
+      if(rec._stale){ URL.revokeObjectURL(url); return url; }
+      rec.thumbUrl = url;
+      return url;
+    })().catch(err => { rec._thumbPromise = null; throw err; });
+  }
+  return rec._thumbPromise;
+}
+function pumpThumbs(){
+  while(thumbActive < 3 && thumbQueue.length){
+    const { rec, el } = thumbQueue.shift();
+    thumbActive++;
+    loadThumbFor(rec)
+      .then(url => { if(el.isConnected){ el.innerHTML = `<img src="${url}" alt="">`; el.classList.add('loaded'); } })
+      .catch(() => { if(el.isConnected){ el.textContent = '⚠'; el.title = 'Gagal memuat gambar'; } })
+      .finally(() => { thumbActive--; pumpThumbs(); });
+  }
+}
+function observeThumbs(){
+  if(thumbObserver){ thumbObserver.disconnect(); thumbObserver = null; }
+  const els = fileList.querySelectorAll('.fthumb[data-idx]');
+  const enqueue = el => {
+    const rec = folderFilesCache[Number(el.dataset.idx)];
+    if(!rec || rec.thumbUrl) return;
+    thumbQueue.push({ rec, el });
+    pumpThumbs();
+  };
+  if('IntersectionObserver' in window){
+    thumbObserver = new IntersectionObserver(items => {
+      items.forEach(it => { if(it.isIntersecting){ thumbObserver.unobserve(it.target); enqueue(it.target); } });
+    }, { rootMargin: '160px' });
+    els.forEach(el => thumbObserver.observe(el));
+  } else {
+    els.forEach(enqueue);
+  }
+}
+
+let refreshSeq = 0;
 async function refreshFolderFiles(){
-  if(!downloadDirHandle) return;
+  if(!storage) return;
+  const mySeq = ++refreshSeq;
+  const provider = storage;
   folderFilesCount.textContent = 'Memuat isi folder…';
   try{
-    const records = [];
-    for await (const [name, handle] of downloadDirHandle.entries()){
-      if(handle.kind === 'file'){
-        let size = null, actualFormat = 'unknown';
-        try{
-          const f = await handle.getFile();
-          size = f.size;
-          actualFormat = await detectActualFormat(f);
-        } catch(e){ /* abaikan */ }
-        const parsed = parseFilename(name);
-        const mismatch = /^(jpg|jpeg)$/i.test(parsed.ext) && actualFormat !== 'unknown' && actualFormat !== 'jpg';
-        records.push({ name, size, handle, actualFormat, mismatch, ...parsed });
-      }
-    }
+    const listed = await provider.list();
+    if(mySeq !== refreshSeq || provider !== storage) return; // ada pembaruan yang lebih baru
+    const records = listed.map(item => {
+      const parsed = parseFilename(item.name);
+      const mismatch = provider.canDetectFormat && /^(jpg|jpeg)$/i.test(parsed.ext) && item.actualFormat !== 'unknown' && item.actualFormat !== 'jpg';
+      return { ...item, mismatch, ...parsed };
+    });
     records.sort((a, b) => {
       if(a.day !== b.day) return (a.day || 0) - (b.day || 0);
       return (a.seq || 0) - (b.seq || 0);
     });
     const imageExts = ['jpg','jpeg','png'];
+    clearFolderThumbs();
     folderFilesCache = records.filter(r => imageExts.includes((r.ext || '').toLowerCase()));
 
     updateDateFilterOptions();
@@ -949,8 +1469,10 @@ async function refreshFolderFiles(){
       btnFixMismatch.style.display = 'none';
     }
   } catch(err){
+    if(mySeq !== refreshSeq) return;
+    console.error(err);
     folderFilesCount.textContent = 'Isi folder';
-    fileList.innerHTML = '<div class="file-empty">Tidak bisa membaca isi folder (izin dicabut atau folder dipindah).</div>';
+    fileList.innerHTML = `<div class="file-empty">Tidak bisa membaca isi folder (${(err && err.message) || 'izin dicabut atau folder dipindah'}).</div>`;
   }
 }
 btnRefreshFolder.addEventListener('click', refreshFolderFiles);
@@ -1011,7 +1533,7 @@ function renderFolderTable(){
               <span>:</span>
               <input type="number" min="0" max="59" placeholder="mm" class="editEndM" value="${eParts[1] || ''}">
             </div></div>
-            <div class="field titleField"><label>Judul Kegiatan</label><input type="text" class="editTitle" value="${f.title.replace(/"/g,'&quot;')}"></div>
+            <div class="field titleField"><label>Judul Kegiatan</label><input type="text" class="editTitle" value="${escHtml(f.title)}"></div>
           </div>
           <div class="edit-actions">
             <button class="btn btn-ghost btnCancelEdit" data-idx="${idx}">Batal</button>
@@ -1022,13 +1544,16 @@ function renderFolderTable(){
     }
     return `
       <div class="file-row ${f.mismatch ? 'mismatch' : ''}">
+        <div class="fthumb" data-idx="${idx}" role="button" tabindex="0" title="Klik untuk memperbesar" aria-label="Perbesar ${escHtml(f.name)}">${f.thumbUrl ? `<img src="${f.thumbUrl}" alt="">` : '🖼️'}</div>
         <span class="col-no">${f.day !== null ? f.day + '.' + f.seq : '—'}</span>
         <span class="col-time"><span>${f.start || '—'}</span>${f.start ? '<button class="btn-copy" data-copy="'+f.start+'">⧉</button>' : ''}</span>
         <span class="col-time"><span>${f.end || '—'}</span>${f.end ? '<button class="btn-copy" data-copy="'+f.end+'">⧉</button>' : ''}</span>
         <span class="col-duration">${durationLabel(f.start, f.end)}</span>
-        <span class="col-title"><span title="${f.title.replace(/"/g,'&quot;')}">${f.title}</span><button class="btn-copy" data-copy="${f.title.replace(/"/g,'&quot;')}">⧉</button></span>
+        <span class="col-point">${pointLabel(f.start, f.end)}</span>
+        <span class="col-title"><span title="${escHtml(f.title)}">${escHtml(f.title)}</span><button class="btn-copy" data-copy="${escHtml(f.title)}">⧉</button></span>
         <span class="col-ext">${f.ext}${f.mismatch ? `<span class="mismatch-badge" title="Nama file .${f.ext} tapi isinya sebenarnya ${f.actualFormat.toUpperCase()}">⚠ ${f.actualFormat.toUpperCase()}</span>` : ''}</span>
         <span class="col-actions">
+          <button class="btn-copy btnPreviewFile" data-idx="${idx}" title="Perbesar">🔍</button>
           <button class="btn-copy btnEditFile" data-idx="${idx}" title="Edit">✏️</button>
           <button class="btn-copy btnDeleteFile" data-idx="${idx}" title="Hapus">🗑️</button>
         </span>
@@ -1073,9 +1598,20 @@ function renderFolderTable(){
     });
   });
 
+  fileList.querySelectorAll('.fthumb').forEach(el => {
+    el.addEventListener('click', () => openFolderPreview(Number(el.dataset.idx)));
+    el.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openFolderPreview(Number(el.dataset.idx)); }
+    });
+  });
+  fileList.querySelectorAll('.btnPreviewFile').forEach(btn => {
+    btn.addEventListener('click', () => openFolderPreview(Number(btn.dataset.idx)));
+  });
+  observeThumbs();
+
   const totalMinutes = rows.reduce((sum, { f }) => sum + (durationMinutes(f.start, f.end) || 0), 0);
   const totalLabel = dateFilter ? `Total durasi (Tanggal ${dateFilter})` : 'Total durasi tercatat';
-  folderTotal.innerHTML = `${totalLabel}: <b>${fmtDuration(totalMinutes)}</b>`;
+  folderTotal.innerHTML = `${totalLabel}: <b>${fmtDuration(totalMinutes)}</b> &nbsp;=&nbsp; <b class="total-point">${fmtPoint(totalMinutes)} poin</b>`;
 }
 
 async function saveFileEdit(record, draft){
@@ -1103,12 +1639,7 @@ async function saveFileEdit(record, draft){
   }
 
   try{
-    const file = await record.handle.getFile();
-    const newHandle = await downloadDirHandle.getFileHandle(newName, { create: true });
-    const writable = await newHandle.createWritable();
-    await writable.write(file);
-    await writable.close();
-    await downloadDirHandle.removeEntry(record.name);
+    await storage.rename(record, newName);
   } catch(err){
     console.error(err);
     alert('Gagal menyimpan perubahan: ' + err.message);
@@ -1122,7 +1653,7 @@ async function deleteFile(record){
   const ok = confirm(`Hapus file "${record.name}" dari folder? Tindakan ini tidak bisa dibatalkan.`);
   if(!ok) return;
   try{
-    await downloadDirHandle.removeEntry(record.name);
+    await storage.remove(record);
     await refreshFolderFiles();
   } catch(err){
     console.error(err);
@@ -1141,11 +1672,9 @@ async function fixMismatchedFiles(){
   for(const rec of targets){
     folderFilesCount.textContent = `Memperbaiki ${done}/${targets.length}…`;
     try{
-      const file = await rec.handle.getFile();
+      const file = await storage.read(rec);
       const fixedBlob = await compressImage(file, MAX_BYTES);
-      const writable = await rec.handle.createWritable();
-      await writable.write(fixedBlob);
-      await writable.close();
+      await storage.write(rec.name, fixedBlob);
     } catch(err){
       console.error('Gagal memperbaiki', rec.name, err);
     }
@@ -1171,13 +1700,14 @@ async function exportFolderExcel(){
     'Jam Mulai': f.start || '',
     'Jam Selesai': f.end || '',
     'Durasi': durationLabel(f.start, f.end),
+    'Poin': (f.start && f.end && durationMinutes(f.start, f.end) !== null) ? Number((durationMinutes(f.start, f.end) / MENIT_PER_POIN).toFixed(2)) : '',
     'Judul Kegiatan': f.title || '',
     'Ekstensi': f.ext || ''
   }));
   const totalMinutes = folderFilesCache.reduce((sum, f) => sum + (durationMinutes(f.start, f.end) || 0), 0);
-  rows.push({ 'No.': '', 'Jam Mulai': '', 'Jam Selesai': 'Total', 'Durasi': fmtDuration(totalMinutes), 'Judul Kegiatan': '', 'Ekstensi': '' });
+  rows.push({ 'No.': '', 'Jam Mulai': '', 'Jam Selesai': 'Total', 'Durasi': fmtDuration(totalMinutes), 'Poin': Number((totalMinutes / MENIT_PER_POIN).toFixed(2)), 'Judul Kegiatan': '', 'Ekstensi': '' });
   const ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{ wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 45 }, { wch: 8 }];
+  ws['!cols'] = [{ wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 8 }, { wch: 45 }, { wch: 8 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Bukti Dukung');
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -1188,19 +1718,13 @@ async function exportFolderExcel(){
 btnExportExcel.addEventListener('click', exportFolderExcel);
 
 async function saveBlobToFolder(blob, filename){
-  if(downloadDirHandle){
+  if(storage){
     try{
-      let perm = await downloadDirHandle.queryPermission({ mode: 'readwrite' });
-      if(perm !== 'granted'){ perm = await downloadDirHandle.requestPermission({ mode: 'readwrite' }); }
-      if(perm === 'granted'){
-        const fileHandle = await downloadDirHandle.getFileHandle(filename, { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-        return true;
-      }
+      await storage.write(filename, blob);
+      return true;
     } catch(err){
-      console.error('Gagal simpan ke folder pilihan, fallback ke unduhan biasa', err);
+      console.error('Gagal menyimpan ke lokasi pilihan, fallback ke unduhan biasa', err);
+      alertStorageError(`Gagal menyimpan ke ${storage.title}: ${(err && err.message) || err}\n\nFile diunduh ke folder Downloads browser sebagai gantinya.`);
     }
   }
   const a = document.createElement('a');
@@ -1221,7 +1745,7 @@ function findFolderConflict(entry){
 }
 
 async function downloadEntry(entry){
-  if(downloadDirHandle){
+  if(storage){
     const conflict = findFolderConflict(entry);
     if(conflict){
       const ok = confirm(`Nomor ${entry.day}.${entry.seq} sudah ada di folder ("${conflict.title}"). Timpa file itu dengan bukti ini?`);
@@ -1329,27 +1853,38 @@ btnClearAll.addEventListener('click', () => {
 btnDownloadAll.addEventListener('click', async () => {
   if(!entries.length) return;
 
-  if(downloadDirHandle){
+  if(storage){
     const usedNames = new Set();
-    for(const entry of entries){
-      const conflict = findFolderConflict(entry);
-      if(conflict){
-        const ok = confirm(`Nomor ${entry.day}.${entry.seq} sudah ada di folder ("${conflict.title}"). Timpa file itu dengan bukti ini?`);
-        if(!ok) continue;
+    const originalLabel = btnDownloadAll.textContent;
+    btnDownloadAll.disabled = true;
+    let savedCount = 0;
+    try{
+      for(let i = 0; i < entries.length; i++){
+        const entry = entries[i];
+        const conflict = findFolderConflict(entry);
+        if(conflict){
+          const ok = confirm(`Nomor ${entry.day}.${entry.seq} sudah ada di folder ("${conflict.title}"). Timpa file itu dengan bukti ini?`);
+          if(!ok) continue;
+        }
+        let filename = buildFilename(entry);
+        let unique = filename, n = 2;
+        while(usedNames.has(unique)){
+          unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).jpg`;
+          n++;
+        }
+        usedNames.add(unique);
+        btnDownloadAll.textContent = `⏳ Menyimpan ${i + 1}/${entries.length}…`;
+        const ok = await saveBlobToFolder(entry.blob, unique);
+        entry.savedToFolder = ok;
+        if(ok) savedCount++;
       }
-      let filename = buildFilename(entry);
-      let unique = filename, n = 2;
-      while(usedNames.has(unique)){
-        unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).jpg`;
-        n++;
-      }
-      usedNames.add(unique);
-      const saved = await saveBlobToFolder(entry.blob, unique);
-      entry.savedToFolder = saved;
+    } finally {
+      btnDownloadAll.textContent = originalLabel;
+      btnDownloadAll.disabled = entries.length === 0;
     }
     renderItems();
     refreshFolderFiles();
-    alert(`Selesai menyimpan bukti dukung ke folder "${downloadDirHandle.name}".`);
+    alert(`Selesai: ${savedCount} bukti dukung tersimpan ke ${storageDescribe(storage)}.`);
     return;
   }
 
@@ -1418,33 +1953,94 @@ async function initVisitCounter(){
   }
 }
 
-// --- Pratinjau besar (lightbox) ---
+// --- Pratinjau besar (lightbox) untuk bukti di daftar maupun file di folder ---
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 const lightboxCaption = document.getElementById('lightboxCaption');
 const lightboxClose = document.getElementById('lightboxClose');
+const lightboxPrev = document.getElementById('lightboxPrev');
+const lightboxNext = document.getElementById('lightboxNext');
+const lightboxCount = document.getElementById('lightboxCount');
 let lastFocusedBeforePreview = null;
+let previewItems = [];   // [{ getUrl: async () => url, caption }]
+let previewIndex = 0;
+let previewToken = 0;
 
-function openPreview(entryId){
-  const entry = entries.find(x => x.id === entryId);
-  if(!entry) return;
+function openPreviewList(items, index){
+  if(!items.length) return;
+  previewItems = items;
+  previewIndex = Math.max(0, Math.min(index, items.length - 1));
   lastFocusedBeforePreview = document.activeElement;
-  lightboxImg.src = entry.url;
-  const jam = (entry.startTime || entry.endTime) ? `${entry.startTime || '—'} – ${entry.endTime || '—'}` : 'jam belum diisi';
-  lightboxCaption.textContent = `${entry.day}.${entry.seq} · ${jam} · ${entry.title.trim() || 'Tanpa judul'} · ${entry.processing ? 'mengompres…' : fmtSize(entry.sizeBytes)}`;
   lightbox.classList.add('open');
   lightbox.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
   lightboxClose.focus();
+  showPreview();
+}
+async function showPreview(){
+  const item = previewItems[previewIndex];
+  if(!item) return;
+  const token = ++previewToken;
+  const multi = previewItems.length > 1;
+  lightboxPrev.style.display = lightboxNext.style.display = multi ? '' : 'none';
+  lightboxCount.textContent = multi ? `${previewIndex + 1} / ${previewItems.length}` : '';
+  lightboxCaption.textContent = item.caption + ' · memuat…';
+  lightboxImg.removeAttribute('src');
+  try{
+    const url = await item.getUrl();
+    if(token !== previewToken) return;
+    lightboxImg.src = url;
+    lightboxCaption.textContent = item.caption;
+  } catch(err){
+    if(token !== previewToken) return;
+    lightboxCaption.textContent = item.caption + ' · gagal memuat gambar';
+  }
+}
+function stepPreview(delta){
+  if(previewItems.length < 2) return;
+  previewIndex = (previewIndex + delta + previewItems.length) % previewItems.length;
+  showPreview();
 }
 function closePreview(){
   if(!lightbox.classList.contains('open')) return;
+  previewToken++;
   lightbox.classList.remove('open');
   lightbox.setAttribute('aria-hidden', 'true');
   lightboxImg.removeAttribute('src');
+  previewItems = [];
   document.body.style.overflow = '';
   if(lastFocusedBeforePreview && lastFocusedBeforePreview.focus) lastFocusedBeforePreview.focus();
 }
+
+// Bukti yang sedang disiapkan (daftar di bawah)
+function openPreview(entryId){
+  const items = entries.map(entry => ({
+    id: entry.id,
+    getUrl: async () => entry.url,
+    get caption(){
+      const jam = (entry.startTime || entry.endTime) ? `${entry.startTime || '—'} – ${entry.endTime || '—'}` : 'jam belum diisi';
+      return `${entry.day}.${entry.seq} · ${jam} · ${entry.title.trim() || 'Tanpa judul'} · ${entry.processing ? 'mengompres…' : fmtSize(entry.sizeBytes)}`;
+    }
+  }));
+  openPreviewList(items, items.findIndex(i => i.id === entryId));
+}
+// File yang sudah tersimpan di lokasi unduhan (mengikuti filter tanggal yang aktif)
+function openFolderPreview(idx){
+  const rows = visibleFolderRows();
+  const items = rows.map(({ f, idx: i }) => ({
+    idx: i,
+    getUrl: () => loadThumbFor(folderFilesCache[i]),
+    caption: [
+      f.day !== null ? `${f.day}.${f.seq}` : f.name,
+      (f.start || f.end) ? `${f.start || '—'} – ${f.end || '—'}` : null,
+      f.day !== null ? f.title : null,
+      f.size !== null && f.size !== undefined ? fmtSize(f.size) : null,
+      f.mismatch ? `⚠ isinya ${f.actualFormat.toUpperCase()}, bukan JPEG` : null
+    ].filter(Boolean).join(' · ')
+  }));
+  openPreviewList(items, items.findIndex(i => i.idx === idx));
+}
+
 itemsGrid.addEventListener('click', e => {
   const thumb = e.target.closest('.thumb');
   if(thumb) openPreview(Number(thumb.dataset.id));
@@ -1457,11 +2053,20 @@ itemsGrid.addEventListener('keydown', e => {
 });
 lightbox.addEventListener('click', e => { if(e.target === lightbox) closePreview(); });
 lightboxClose.addEventListener('click', closePreview);
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closePreview(); });
+lightboxPrev.addEventListener('click', () => stepPreview(-1));
+lightboxNext.addEventListener('click', () => stepPreview(1));
+document.addEventListener('keydown', e => {
+  if(!lightbox.classList.contains('open')) return;
+  if(e.key === 'Escape') closePreview();
+  else if(e.key === 'ArrowLeft') stepPreview(-1);
+  else if(e.key === 'ArrowRight') stepPreview(1);
+});
 
-renderItems();
-initFolder();
-initVisitCounter();
+if(!IS_AUTH_POPUP){
+  renderItems();
+  initStorage();
+  initVisitCounter();
+}
 </script>
 </body>
 </html>
