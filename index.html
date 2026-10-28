@@ -406,7 +406,7 @@
       <output class="seq-preview dg-seq" id="seqPreview">—</output>
       <span class="date-label dg-note" id="dateLabel"></span>
     </div>
-    <p class="hint">Nomor ini otomatis dihitung dari nomor tertinggi yang sudah ada di folder unduhan + sesi berjalan untuk tanggal ini — jadi tetap aman meski ada kegiatan yang belum sempat di-screenshot (misal 25.1 masih kosong tapi 25.2 sudah ada). Nomor tiap item tetap bisa kamu ubah manual di kartu masing-masing.</p>
+    <!-- <p class="hint">Nomor ini otomatis dihitung dari nomor tertinggi yang sudah ada di folder unduhan + sesi berjalan untuk tanggal ini — jadi tetap aman meski ada kegiatan yang belum sempat di-screenshot (misal 25.1 masih kosong tapi 25.2 sudah ada). Nomor tiap item tetap bisa kamu ubah manual di kartu masing-masing.</p> -->
   </div>
 
   <div class="panel">
@@ -1245,11 +1245,11 @@ function storageDescribe(p){
   return `☁️ ${p.title} › ${p.folderName}`;
 }
 
-const STORAGE_HINTS = {
-  local: 'Pilih folder di komputer. <b>Tips:</b> kalau foldernya berada di dalam Google Drive for desktop atau OneDrive yang sudah tersinkron, file otomatis ikut ter-upload ke cloud tanpa pengaturan tambahan. Folder diingat walau halaman di-refresh. Butuh Chrome/Edge; di browser lain file tetap terunduh ke folder Downloads.',
-  gdrive: 'Berkas diunggah langsung ke Google Drive kamu, ke folder bernama di atas (dibuat otomatis bila belum ada). ESA hanya bisa melihat berkas yang dibuatnya sendiri (izin <code>drive.file</code>), jadi file yang diunggah dengan cara lain tidak ikut tampil.',
-  onedrive: 'Berkas diunggah langsung ke OneDrive kamu, ke folder bernama di atas (dibuat otomatis saat berkas pertama disimpan). Login lewat jendela popup Microsoft — izinkan popup untuk situs ini.'
-};
+// const STORAGE_HINTS = {
+//   local: 'Pilih folder di komputer. <b>Tips:</b> kalau foldernya berada di dalam Google Drive for desktop atau OneDrive yang sudah tersinkron, file otomatis ikut ter-upload ke cloud tanpa pengaturan tambahan. Folder diingat walau halaman di-refresh. Butuh Chrome/Edge; di browser lain file tetap terunduh ke folder Downloads.',
+//   gdrive: 'Berkas diunggah langsung ke Google Drive kamu, ke folder bernama di atas (dibuat otomatis bila belum ada). ESA hanya bisa melihat berkas yang dibuatnya sendiri (izin <code>drive.file</code>), jadi file yang diunggah dengan cara lain tidak ikut tampil.',
+//   onedrive: 'Berkas diunggah langsung ke OneDrive kamu, ke folder bernama di atas (dibuat otomatis saat berkas pertama disimpan). Login lewat jendela popup Microsoft — izinkan popup untuk situs ini.'
+// };
 
 // Menampilkan tab, label, tombol, dan petunjuk sesuai kondisi (tanpa memuat ulang isi folder)
 function renderStorageUI(){
