@@ -190,7 +190,7 @@
 
   .folder-files{margin-top:14px;}
   .table-scroll{overflow-x:auto;}
-  .table-inner{min-width:800px;}
+  .table-inner{min-width:830px;}
   .fthumb{
     width:44px;height:32px;border-radius:6px;overflow:hidden;background:#000;
     border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
@@ -217,7 +217,7 @@
   .file-table{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;}
   .file-head-row, .file-row{
     display:grid;
-    grid-template-columns:46px 52px 78px 78px 92px 48px 1fr 56px 84px;
+    grid-template-columns:46px 52px 78px 78px 92px 48px 1fr 56px 112px;
     gap:8px;align-items:center;
   }
   .file-head-row{
@@ -378,6 +378,44 @@
   footer.actions .count{font-size:13px;color:var(--text-dim);}
   footer.actions .count b{color:var(--text);}
 
+  /* --- Editor sensor area sensitif --- */
+  .censor-tag{
+    font-size:11px;font-weight:600;white-space:nowrap;color:var(--good);
+    background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);
+    border-radius:20px;padding:3px 8px;
+  }
+  .editor{
+    position:fixed;inset:0;z-index:300;display:none;flex-direction:column;
+    background:rgba(10,6,20,0.97);
+  }
+  .editor.open{display:flex;}
+  .editor-bar{
+    display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;
+    padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--line);
+  }
+  .editor-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .editor-title small{font-family:'Inter',sans-serif;font-weight:500;font-size:11.5px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46ch;}
+  .editor-tools{display:flex;gap:6px;flex-wrap:wrap;}
+  .etool{
+    appearance:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;font-size:12.5px;
+    padding:8px 12px;border-radius:9px;background:var(--bg-1);color:var(--text-dim);border:1px solid var(--line);
+  }
+  .etool:hover{border-color:var(--violet-dim);color:var(--text);}
+  .etool.active{background:linear-gradient(135deg, var(--violet), var(--violet-dim));color:#fff;border-color:transparent;}
+  .editor-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .editor-actions .btn{padding:8px 12px;font-size:12.5px;}
+  .editor-stage{flex:1;min-height:0;overflow:auto;display:flex;padding:14px;}
+  .editor-stage canvas{
+    margin:auto;max-width:100%;max-height:100%;cursor:crosshair;touch-action:none;
+    border:1px solid var(--line);background:#000;box-shadow:0 16px 50px rgba(0,0,0,0.55);
+  }
+  .editor-stage.actual canvas{max-width:none;max-height:none;}
+  .editor-foot{
+    padding:9px 16px;font-size:12px;color:var(--text-faint);line-height:1.5;
+    background:var(--panel);border-top:1px solid var(--line);
+  }
+  .editor-foot b{color:var(--text-dim);}
+
   ::selection{background:rgba(139,92,246,0.35);}
 </style>
 </head>
@@ -495,6 +533,30 @@
   <img id="lightboxImg" alt="Pratinjau bukti dukung">
   <div class="lightbox-caption" id="lightboxCaption"></div>
   <div class="lightbox-count" id="lightboxCount"></div>
+</div>
+
+<div class="editor" id="editor" aria-hidden="true" role="dialog" aria-label="Sensor area sensitif">
+  <div class="editor-bar">
+    <div class="editor-title">
+      <span>🛡️ Sensor area sensitif · <span id="editorInfo">0 area</span></span>
+      <small id="editorName"></small>
+    </div>
+    <div class="editor-tools" role="radiogroup" aria-label="Jenis sensor">
+      <button type="button" class="etool active" data-mode="blur" role="radio" aria-checked="true">🌫️ Blur</button>
+      <button type="button" class="etool" data-mode="pixel" role="radio" aria-checked="false">🔳 Pixel</button>
+      <button type="button" class="etool" data-mode="black" role="radio" aria-checked="false">⬛ Blok hitam</button>
+    </div>
+    <div class="editor-actions">
+      <button type="button" class="btn btn-ghost" id="editorZoom" title="Tampilkan ukuran asli / pas layar">🔎 100%</button>
+      <button type="button" class="btn btn-ghost" id="editorUndo" title="Urungkan (Ctrl+Z)">↶ Urungkan</button>
+      <button type="button" class="btn btn-ghost" id="editorClear">Hapus semua</button>
+      <button type="button" class="btn btn-ghost" id="editorReset" style="display:none;" title="Buang semua sensor sebelumnya dan mulai dari gambar asli">↺ Kembalikan asli</button>
+      <button type="button" class="btn btn-ghost" id="editorCancel">Batal</button>
+      <button type="button" class="btn btn-primary" id="editorSave">💾 Terapkan</button>
+    </div>
+  </div>
+  <div class="editor-stage" id="editorStage"><canvas id="editorCanvas"></canvas></div>
+  <div class="editor-foot"><b>Seret pada gambar</b> untuk menandai area yang mau disensor (NIK, nama, nomor rekening, dll.). <b>⬛ Blok hitam</b> paling aman untuk teks kecil — blur dan pixel pada area yang lebar kadang masih bisa ditebak. Hasil disimpan sebagai gambar baru: bagian yang disensor benar-benar diganti, tidak bisa dipulihkan dari file hasilnya.</div>
 </div>
 
 <script>
@@ -721,6 +783,7 @@ function renderItems(){
             <span class="day-part">${entry.day}.</span>
             <input type="number" min="1" class="seqInput" data-id="${entry.id}" value="${entry.seq}">
           </div>
+          ${entry.censored ? `<span class="censor-tag" title="Area sensitif sudah diganti pada gambar ini">🛡️ ${entry.censored} area disensor</span>` : ''}
           <span class="size-tag ${sizeClass}">${sizeLabel}</span>
         </div>
         <div class="time-row ${timeWarn}">
@@ -752,6 +815,7 @@ function renderItems(){
         <input type="text" placeholder="Judul kegiatan…" value="${entry.title.replace(/"/g,'&quot;')}" data-id="${entry.id}" class="titleInput">
         <div class="item-actions">
           <button class="btn btn-ghost btnDownloadOne" data-id="${entry.id}">⬇️ Unduh</button>
+          <button class="btn btn-ghost btnCensor" data-id="${entry.id}" ${entry.processing ? 'disabled' : ''} title="Blur / sensor area sensitif (NIK, nama, nomor, dll.)">🛡️ Sensor</button>
           <button class="btn btn-danger btnRemove" data-id="${entry.id}">Hapus</button>
           ${savedTag}
         </div>
@@ -807,6 +871,12 @@ function renderItems(){
       entries = entries.filter(x => x.id !== Number(e.target.dataset.id));
       renderItems();
       updateSeqPreview();
+    });
+  });
+  itemsGrid.querySelectorAll('.btnCensor').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const entry = entries.find(x => x.id === Number(e.currentTarget.dataset.id));
+      if(entry) censorEntry(entry);
     });
   });
   itemsGrid.querySelectorAll('.btnDownloadOne').forEach(btn => {
@@ -1554,6 +1624,7 @@ function renderFolderTable(){
         <span class="col-ext">${f.ext}${f.mismatch ? `<span class="mismatch-badge" title="Nama file .${f.ext} tapi isinya sebenarnya ${f.actualFormat.toUpperCase()}">⚠ ${f.actualFormat.toUpperCase()}</span>` : ''}</span>
         <span class="col-actions">
           <button class="btn-copy btnPreviewFile" data-idx="${idx}" title="Perbesar">🔍</button>
+          <button class="btn-copy btnCensorFile" data-idx="${idx}" title="Sensor area sensitif">🛡️</button>
           <button class="btn-copy btnEditFile" data-idx="${idx}" title="Edit">✏️</button>
           <button class="btn-copy btnDeleteFile" data-idx="${idx}" title="Hapus">🗑️</button>
         </span>
@@ -1603,6 +1674,9 @@ function renderFolderTable(){
     el.addEventListener('keydown', e => {
       if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openFolderPreview(Number(el.dataset.idx)); }
     });
+  });
+  fileList.querySelectorAll('.btnCensorFile').forEach(btn => {
+    btn.addEventListener('click', () => censorFolderFile(Number(btn.dataset.idx)));
   });
   fileList.querySelectorAll('.btnPreviewFile').forEach(btn => {
     btn.addEventListener('click', () => openFolderPreview(Number(btn.dataset.idx)));
@@ -1765,7 +1839,7 @@ async function addEntry(rawBlob){
   const id = ++idCounter;
 
   const placeholderUrl = URL.createObjectURL(rawBlob);
-  const entry = { id, blob: rawBlob, url: placeholderUrl, day, seq, title: '', startH: '', startM: '', endH: '', endM: '', startTime: '', endTime: '', sizeBytes: rawBlob.size, processing: true, savedToFolder: false };
+  const entry = { id, blob: rawBlob, url: placeholderUrl, day, seq, title: '', startH: '', startM: '', endH: '', endM: '', startTime: '', endTime: '', sizeBytes: rawBlob.size, processing: true, savedToFolder: false, sourceBlob: rawBlob, censored: 0 };
   entries.push(entry);
   renderItems();
   updateSeqPreview();
@@ -2061,6 +2135,258 @@ document.addEventListener('keydown', e => {
   else if(e.key === 'ArrowLeft') stepPreview(-1);
   else if(e.key === 'ArrowRight') stepPreview(1);
 });
+
+// --- Sensor area sensitif (blur / pixel / blok hitam) ---
+const editor = document.getElementById('editor');
+const editorCanvas = document.getElementById('editorCanvas');
+const editorStage = document.getElementById('editorStage');
+const editorInfo = document.getElementById('editorInfo');
+const editorName = document.getElementById('editorName');
+const btnEditorUndo = document.getElementById('editorUndo');
+const btnEditorClear = document.getElementById('editorClear');
+const btnEditorReset = document.getElementById('editorReset');
+const btnEditorCancel = document.getElementById('editorCancel');
+const btnEditorSave = document.getElementById('editorSave');
+const btnEditorZoom = document.getElementById('editorZoom');
+let ed = null; // keadaan editor yang sedang terbuka
+
+function canvasToBlob(canvas, type, quality){
+  return new Promise(resolve => canvas.toBlob(resolve, type, quality));
+}
+
+// Menerapkan satu area sensor langsung ke piksel kanvas (hasil benar-benar menggantikan isi aslinya)
+function applyRegion(ctx, r, mode){
+  const x = Math.round(r.x), y = Math.round(r.y), w = Math.round(r.w), h = Math.round(r.h);
+  if(w < 1 || h < 1) return;
+  if(mode === 'black'){
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x, y, w, h);
+    return;
+  }
+  // blur & pixel: perkecil area drastis lalu dibentangkan lagi → detail huruf/angka hilang
+  const small = Math.min(w, h);
+  const k = mode === 'pixel'
+    ? Math.max(6, Math.min(28, Math.round(small / 5)))
+    : Math.max(8, Math.min(48, Math.round(small / 4)));
+  const tmp = document.createElement('canvas');
+  tmp.width = Math.max(1, Math.round(w / k));
+  tmp.height = Math.max(1, Math.round(h / k));
+  const t = tmp.getContext('2d');
+  t.imageSmoothingEnabled = true;
+  t.imageSmoothingQuality = 'high';
+  t.drawImage(ctx.canvas, x, y, w, h, 0, 0, tmp.width, tmp.height);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  ctx.imageSmoothingEnabled = mode !== 'pixel'; // pixel = kotak tegas, blur = halus
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(tmp, 0, 0, tmp.width, tmp.height, x, y, w, h);
+  ctx.restore();
+}
+
+function renderEditor(){
+  if(!ed) return;
+  const ctx = editorCanvas.getContext('2d');
+  ctx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+  ctx.drawImage(ed.base, 0, 0);
+  ed.regions.forEach(r => applyRegion(ctx, r, r.mode));
+  // garis bantu — hanya di layar editor, tidak ikut ke hasil
+  const lw = Math.max(2, Math.round(editorCanvas.width / 400));
+  ctx.save();
+  ctx.lineWidth = lw;
+  ctx.setLineDash([lw * 3, lw * 2]);
+  ctx.strokeStyle = 'rgba(167,139,250,0.95)';
+  ed.regions.forEach(r => ctx.strokeRect(r.x + lw / 2, r.y + lw / 2, Math.max(0, r.w - lw), Math.max(0, r.h - lw)));
+  if(ed.draft){
+    ctx.fillStyle = 'rgba(232,121,185,0.18)';
+    ctx.strokeStyle = 'rgba(232,121,185,1)';
+    ctx.fillRect(ed.draft.x, ed.draft.y, ed.draft.w, ed.draft.h);
+    ctx.strokeRect(ed.draft.x, ed.draft.y, ed.draft.w, ed.draft.h);
+  }
+  ctx.restore();
+  const n = ed.regions.length;
+  editorInfo.textContent = `${n} area` + (ed.usedSource ? ' · dari gambar asli' : '');
+  btnEditorUndo.disabled = n === 0;
+  btnEditorClear.disabled = n === 0;
+}
+
+function setEditorMode(mode){
+  if(ed) ed.mode = mode;
+  editor.querySelectorAll('.etool').forEach(b => {
+    const on = b.dataset.mode === mode;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+}
+
+async function loadEditorBase(blob){
+  const bitmap = await createImageBitmap(blob);
+  const base = document.createElement('canvas');
+  base.width = bitmap.width; base.height = bitmap.height;
+  base.getContext('2d').drawImage(bitmap, 0, 0);
+  if(bitmap.close) bitmap.close();
+  editorCanvas.width = base.width;
+  editorCanvas.height = base.height;
+  return base;
+}
+
+// opts: { title, blob, source (opsional), onSave(canvas, jumlahArea, dariAsli) }
+async function openEditor(opts){
+  if(ed) return;
+  let base;
+  try{ base = await loadEditorBase(opts.blob); }
+  catch(err){ alert('Gambar tidak bisa dibuka di editor sensor: ' + ((err && err.message) || err)); return; }
+  ed = { opts, base, regions: [], draft: null, drag: null, mode: 'blur', usedSource: false, saving: false, lastFocus: document.activeElement };
+  editorName.textContent = opts.title || '';
+  btnEditorReset.style.display = opts.source ? '' : 'none';
+  editorStage.classList.remove('actual');
+  btnEditorZoom.textContent = '🔎 100%';
+  setEditorMode('blur');
+  editor.classList.add('open');
+  editor.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  renderEditor();
+  btnEditorSave.focus();
+}
+
+function closeEditor(force){
+  if(!ed) return;
+  if(!force && !ed.saving && (ed.regions.length || ed.usedSource) && !confirm('Buang sensor yang belum diterapkan?')) return;
+  const back = ed.lastFocus;
+  ed = null;
+  editor.classList.remove('open');
+  editor.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  if(back && back.focus && document.contains(back)) back.focus();
+}
+
+function editorPoint(e){
+  const r = editorCanvas.getBoundingClientRect();
+  const x = (e.clientX - r.left) * editorCanvas.width / r.width;
+  const y = (e.clientY - r.top) * editorCanvas.height / r.height;
+  return { x: Math.max(0, Math.min(editorCanvas.width, x)), y: Math.max(0, Math.min(editorCanvas.height, y)) };
+}
+function normRect(a, b){
+  return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) };
+}
+editorCanvas.addEventListener('pointerdown', e => {
+  if(!ed || ed.saving || (e.button !== undefined && e.button > 0)) return;
+  e.preventDefault();
+  try{ editorCanvas.setPointerCapture(e.pointerId); } catch(err){ /* abaikan */ }
+  ed.drag = editorPoint(e);
+  ed.draft = { ...normRect(ed.drag, ed.drag) };
+  renderEditor();
+});
+editorCanvas.addEventListener('pointermove', e => {
+  if(!ed || !ed.drag) return;
+  ed.draft = normRect(ed.drag, editorPoint(e));
+  renderEditor();
+});
+function endDrag(e, cancelled){
+  if(!ed || !ed.drag) return;
+  const rect = normRect(ed.drag, editorPoint(e));
+  const r = editorCanvas.getBoundingClientRect();
+  const minSize = 8 * editorCanvas.width / r.width; // abaikan klik / seretan yang terlalu kecil (< 8 px di layar)
+  ed.drag = null;
+  ed.draft = null;
+  if(!cancelled && rect.w >= minSize && rect.h >= minSize){
+    ed.regions.push({ x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.w), h: Math.round(rect.h), mode: ed.mode });
+  }
+  renderEditor();
+}
+editorCanvas.addEventListener('pointerup', e => endDrag(e, false));
+editorCanvas.addEventListener('pointercancel', e => endDrag(e, true));
+
+editor.querySelectorAll('.etool').forEach(b => b.addEventListener('click', () => setEditorMode(b.dataset.mode)));
+function undoRegion(){ if(ed && ed.regions.length){ ed.regions.pop(); renderEditor(); } }
+btnEditorUndo.addEventListener('click', undoRegion);
+btnEditorClear.addEventListener('click', () => { if(ed){ ed.regions = []; renderEditor(); } });
+btnEditorCancel.addEventListener('click', () => closeEditor(false));
+btnEditorZoom.addEventListener('click', () => {
+  const actual = editorStage.classList.toggle('actual');
+  btnEditorZoom.textContent = actual ? '🔎 Pas layar' : '🔎 100%';
+});
+btnEditorReset.addEventListener('click', async () => {
+  if(!ed || !ed.opts.source) return;
+  if(!confirm('Buang semua sensor sebelumnya dan kembali ke gambar asli? Area yang sudah disensor akan terlihat lagi di editor.')) return;
+  try{
+    ed.base = await loadEditorBase(ed.opts.source);
+    ed.regions = [];
+    ed.usedSource = true;
+    renderEditor();
+  } catch(err){ alert('Gagal memuat gambar asli: ' + ((err && err.message) || err)); }
+});
+btnEditorSave.addEventListener('click', async () => {
+  if(!ed || ed.saving) return;
+  if(!ed.regions.length && !ed.usedSource){ closeEditor(true); return; } // tidak ada perubahan
+  ed.saving = true;
+  btnEditorSave.disabled = true;
+  btnEditorSave.textContent = '⏳ Menerapkan…';
+  const current = ed;
+  try{
+    const out = document.createElement('canvas'); // hasil bersih: tanpa garis bantu
+    out.width = current.base.width; out.height = current.base.height;
+    const c = out.getContext('2d');
+    c.drawImage(current.base, 0, 0);
+    current.regions.forEach(r => applyRegion(c, r, r.mode));
+    await current.opts.onSave(out, current.regions.length, current.usedSource);
+    closeEditor(true);
+  } catch(err){
+    console.error(err);
+    alert('Gagal menerapkan sensor: ' + ((err && err.message) || err));
+  } finally {
+    current.saving = false;
+    btnEditorSave.disabled = false;
+    btnEditorSave.textContent = '💾 Terapkan';
+  }
+});
+document.addEventListener('keydown', e => {
+  if(!ed) return;
+  if(e.key === 'Escape'){ e.preventDefault(); closeEditor(false); }
+  else if((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')){ e.preventDefault(); undoRegion(); }
+});
+
+// Sensor untuk bukti yang belum disimpan (daftar di bawah)
+function censorEntry(entry){
+  if(entry.processing) return;
+  openEditor({
+    title: `${entry.day}.${entry.seq} · ${entry.title.trim() || 'Tanpa judul'}`,
+    blob: entry.blob,
+    source: entry.sourceBlob || null,
+    async onSave(canvas, count, fromSource){
+      const out = await compressImage(await canvasToBlob(canvas, 'image/png'), MAX_BYTES);
+      URL.revokeObjectURL(entry.url);
+      entry.blob = out;
+      entry.url = URL.createObjectURL(out);
+      entry.sizeBytes = out.size;
+      entry.censored = (fromSource ? 0 : (entry.censored || 0)) + count;
+      entry.savedToFolder = false; // versi tersensor perlu disimpan ulang
+      renderItems();
+    }
+  });
+}
+
+// Sensor untuk file yang sudah tersimpan di lokasi unduhan (file ditimpa dengan versi tersensor)
+async function censorFolderFile(idx){
+  const rec = folderFilesCache[idx];
+  if(!rec || !storage) return;
+  let blob;
+  try{ blob = await storage.read(rec); }
+  catch(err){ alert('Tidak bisa membuka file: ' + ((err && err.message) || err)); return; }
+  const isPng = /^png$/i.test(rec.ext);
+  openEditor({
+    title: rec.name,
+    blob,
+    source: null,
+    async onSave(canvas){
+      const png = await canvasToBlob(canvas, 'image/png');
+      const out = isPng ? png : await compressImage(png, MAX_BYTES);
+      await storage.write(rec.name, out);
+      await refreshFolderFiles();
+    }
+  });
+}
 
 if(!IS_AUTH_POPUP){
   renderItems();
