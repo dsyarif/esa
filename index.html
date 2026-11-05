@@ -416,6 +416,131 @@
   }
   .editor-foot b{color:var(--text-dim);}
 
+  /* --- Halaman panduan (#panduan) --- */
+  .header-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+  .header-top .eyebrow{margin-bottom:0;}
+  .guide-link{
+    font-size:12.5px;font-weight:600;color:var(--violet-2);text-decoration:none;white-space:nowrap;
+    border:1px solid rgba(139,92,246,0.35);background:rgba(139,92,246,0.10);
+    border-radius:999px;padding:6px 14px;transition:border-color .15s ease, color .15s ease;
+  }
+  .guide-link:hover, .guide-link:focus-visible{border-color:var(--violet);color:#fff;outline:none;}
+  .guide-page{display:none;max-width:860px;margin:0 auto;line-height:1.65;}
+  body.view-guide .wrap, body.view-guide footer.actions{display:none;}
+  body.view-guide .guide-page{display:block;}
+  .guide-toolbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+  .guide-toolbar .btn{text-decoration:none;}
+  .guide-title{
+    font-family:'Space Grotesk',sans-serif;font-size:clamp(26px,4.2vw,36px);margin:0 0 10px;font-weight:700;letter-spacing:-0.01em;
+    background:linear-gradient(135deg, var(--text), var(--violet-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .guide-lead{color:var(--text-dim);font-size:15px;max-width:68ch;margin:0 0 18px;}
+  .guide-flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;}
+  .guide-flow .fl{
+    display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--text);
+    background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;
+  }
+  .guide-flow .fl i{
+    font-style:normal;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg, var(--violet), var(--violet-dim));color:#fff;font-size:11px;font-weight:700;
+  }
+  .guide-flow .fl.opt{opacity:.75;border-style:dashed;}
+  .guide-flow .arrow{color:var(--text-faint);}
+  .guide-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+  .guide-nav button{
+    appearance:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;font-size:12.5px;
+    padding:7px 13px;border-radius:999px;background:var(--bg-1);color:var(--text-dim);border:1px solid var(--line);
+  }
+  .guide-nav button:hover{border-color:var(--violet-dim);color:var(--text);}
+  .gsec{margin-top:34px;scroll-margin-top:16px;}
+  .gsec > h2{
+    font-family:'Space Grotesk',sans-serif;font-size:21px;margin:0 0 6px;font-weight:700;
+    display:flex;align-items:center;gap:10px;
+  }
+  .gsec > h2 .gn{
+    width:28px;height:28px;border-radius:8px;background:rgba(139,92,246,0.18);color:var(--violet-2);
+    display:inline-flex;align-items:center;justify-content:center;font-size:14px;
+  }
+  .gsec > .gintro{color:var(--text-dim);font-size:14px;margin:0 0 16px;}
+  .gstep{
+    display:grid;grid-template-columns:38px 1fr;gap:14px;
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));border:1px solid var(--line);
+    border-radius:var(--radius);padding:18px;margin-bottom:14px;
+  }
+  .gstep .num{
+    width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg, var(--violet), var(--violet-dim));color:#fff;font-weight:700;font-family:'Space Grotesk',sans-serif;
+  }
+  .gstep h3{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:2px 0 8px;font-weight:600;}
+  .gstep p{margin:0 0 10px;font-size:14px;color:var(--text-dim);}
+  .gstep p:last-child{margin-bottom:0;}
+  .gstep ul, .gstep ol{margin:0 0 10px;padding-left:20px;font-size:14px;color:var(--text-dim);}
+  .gstep li{margin-bottom:5px;}
+  .gstep b, .guide-page b{color:var(--text);}
+  .ui{
+    display:inline-block;padding:1px 9px;border-radius:7px;border:1px solid var(--line);background:var(--bg-1);
+    font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap;line-height:1.7;
+  }
+  kbd{
+    display:inline-block;padding:0 7px;border-radius:6px;border:1px solid var(--line);border-bottom-width:2px;background:var(--bg-1);
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text);line-height:1.7;
+  }
+  .gmini{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:4px 0 10px;}
+  .gmini > div{background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--text-dim);}
+  .gmini > div > b{display:block;margin-bottom:4px;font-size:13.5px;}
+  .gtip, .gwarn{border-radius:10px;padding:10px 13px;font-size:13px;margin:10px 0 0;line-height:1.55;}
+  .gtip{background:rgba(139,92,246,0.10);border:1px solid rgba(139,92,246,0.28);color:var(--text-dim);}
+  .gwarn{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.32);color:#f2d68a;}
+  .gtip b{color:var(--violet-2);}
+  .gwarn b{color:var(--warn);}
+  .fname{
+    display:block;margin:8px 0 10px;padding:12px 14px;border-radius:10px;background:var(--bg-1);border:1px solid var(--line);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:var(--text);overflow-wrap:anywhere;
+  }
+  .fname .f1{color:#f0abfc;} .fname .f2{color:#fda4af;} .fname .f3{color:#86efac;} .fname .f4{color:#93c5fd;}
+  .flegend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 14px;font-size:12.5px;color:var(--text-dim);margin-bottom:4px;}
+  .flegend span::before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:baseline;}
+  .flegend .l1::before{background:#f0abfc;} .flegend .l2::before{background:#fda4af;} .flegend .l3::before{background:#86efac;} .flegend .l4::before{background:#93c5fd;}
+  .gacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;}
+  .gacts > div{background:var(--bg-1);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--text-dim);}
+  details.gfaq{
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));border:1px solid var(--line);
+    border-radius:12px;margin-bottom:10px;padding:0 16px;
+  }
+  details.gfaq summary{cursor:pointer;padding:13px 0;font-weight:600;font-size:14px;color:var(--text);list-style:none;display:flex;gap:10px;align-items:flex-start;}
+  details.gfaq summary::-webkit-details-marker{display:none;}
+  details.gfaq summary::before{content:'＋';color:var(--violet-2);font-weight:700;flex:none;}
+  details.gfaq[open] summary::before{content:'－';}
+  details.gfaq .ans{padding:0 0 14px 24px;font-size:13.5px;color:var(--text-dim);}
+  details.gfaq .ans p{margin:0 0 8px;}
+  details.gfaq .ans ul{margin:0 0 8px;padding-left:18px;}
+  .gkeys{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .gkeys td{padding:9px 6px;border-bottom:1px solid var(--line);color:var(--text-dim);vertical-align:top;}
+  .gkeys td:first-child{white-space:nowrap;width:1%;padding-right:18px;}
+  .gprivacy{
+    margin-top:30px;padding:16px 18px;border-radius:var(--radius);font-size:13.5px;color:var(--text-dim);
+    background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.25);
+  }
+  .gprivacy b{color:var(--good);}
+  .guide-end{margin:30px 0 10px;text-align:center;}
+  .guide-end .btn{text-decoration:none;}
+  @media (max-width:560px){
+    .gstep{grid-template-columns:1fr;gap:8px;padding:16px 14px;}
+    .gstep .num{width:30px;height:30px;font-size:14px;}
+  }
+  @media print{
+    @page{margin:14mm;}
+    html, body{background:#fff !important;color:#111 !important;padding:0 !important;min-height:0;}
+    .lightbox, .editor, .guide-toolbar, .guide-nav, .guide-end{display:none !important;}
+    .guide-page, .guide-page *{color:#111 !important;background:transparent !important;border-color:#b9b9c4 !important;box-shadow:none !important;text-shadow:none !important;-webkit-text-fill-color:#111 !important;}
+    .guide-title{-webkit-text-fill-color:#3b1d8f !important;color:#3b1d8f !important;}
+    .gstep, details.gfaq, .gprivacy{break-inside:avoid;}
+    /* latar belakang tidak ikut tercetak secara bawaan → lingkaran bergaris dengan angka gelap */
+    .gstep .num, .guide-flow .fl i, .gsec > h2 .gn{background:transparent !important;border:1.5px solid #6d4fc9 !important;color:#3b1d8f !important;-webkit-text-fill-color:#3b1d8f !important;}
+    .gsec{margin-top:22px;}
+    .ui, kbd{background:#f1eefb !important;}
+  }
+
   ::selection{background:rgba(139,92,246,0.35);}
 </style>
 </head>
@@ -423,7 +548,10 @@
 <div class="wrap">
 
   <header>
-    <div class="eyebrow">e-Kinerja · Bukti Dukung</div>
+    <div class="header-top">
+      <div class="eyebrow">e-Kinerja · Bukti Dukung</div>
+      <a class="guide-link" href="#panduan" title="Buka tata cara penggunaan ESA">📖 Panduan penggunaan</a>
+    </div>
     <div class="brand">
       <h1>ESA</h1>
       <span class="full-name">E-Kinerja Screenshot Assistant</span>
@@ -517,6 +645,232 @@
   </div>
 
 </div>
+
+<main class="guide-page" id="guidePage" aria-label="Panduan penggunaan ESA">
+  <div class="guide-toolbar">
+    <a class="btn btn-ghost" id="guideBack" href="#">← Kembali ke ESA</a>
+    <button type="button" class="btn btn-ghost" id="guidePrint">🖨️ Cetak / simpan PDF</button>
+  </div>
+
+  <header>
+    <div class="eyebrow">Panduan · ESA</div>
+    <h1 class="guide-title">Tata Cara Penggunaan ESA</h1>
+    <p class="guide-lead">ESA (E-Kinerja Screenshot Assistant) membantu menyiapkan bukti dukung kegiatan untuk e-Kinerja: screenshot diubah menjadi berkas JPEG di bawah 500&nbsp;KB, dinamai seragam (tanggal, nomor, jam, judul), lalu tinggal disalin datanya dan diunggah. Semua proses berjalan di browser kamu.</p>
+    <div class="guide-flow" aria-label="Ringkasan alur">
+      <span class="fl"><i>1</i>Pilih tanggal</span><span class="arrow">→</span>
+      <span class="fl"><i>2</i>Ambil bukti</span><span class="arrow">→</span>
+      <span class="fl"><i>3</i>Isi jam &amp; judul</span><span class="arrow">→</span>
+      <span class="fl opt"><i>4</i>Sensor (jika perlu)</span><span class="arrow">→</span>
+      <span class="fl"><i>5</i>Simpan</span><span class="arrow">→</span>
+      <span class="fl"><i>6</i>Unggah ke e-Kinerja</span>
+    </div>
+    <nav class="guide-nav" aria-label="Isi panduan">
+      <button type="button" data-guide-target="g-persiapan">Persiapan awal</button>
+      <button type="button" data-guide-target="g-harian">Langkah harian</button>
+      <button type="button" data-guide-target="g-kelola">Mengelola berkas tersimpan</button>
+      <button type="button" data-guide-target="g-masalah">Masalah umum</button>
+      <button type="button" data-guide-target="g-pintasan">Pintasan keyboard</button>
+    </nav>
+  </header>
+
+  <section class="gsec" id="g-persiapan">
+    <h2><span class="gn">A</span>Persiapan awal (sekali saja)</h2>
+    <p class="gintro">Pakai komputer dengan browser <b>Chrome</b> atau <b>Edge</b> versi terbaru. Di browser lain ESA tetap bisa dipakai, tetapi berkas hanya masuk ke folder Downloads (lihat bagian Masalah umum).</p>
+
+    <div class="gstep">
+      <div class="num">1</div>
+      <div>
+        <h3>Tentukan folder penyimpanan</h3>
+        <p>Di panel <b>Lokasi Unduhan</b>, klik <span class="ui">📂 Atur Folder Unduhan</span>, pilih folder tempat bukti akan disimpan, lalu setujui izin yang diminta browser (izin mengubah berkas di folder itu).</p>
+        <p>Berhasil jika label berubah hijau menjadi nama folder dan muncul tabel <b>Isi folder</b>. Setelah itu semua berkas langsung masuk ke folder tersebut tanpa dialog <i>Simpan sebagai</i>.</p>
+        <div class="gtip"><b>Saran:</b> buat folder khusus, misalnya <i>Bukti Dukung Oktober 2026</i>, satu folder per bulan. Kalau folder itu berada di dalam <i>Google Drive for desktop</i> atau <i>OneDrive</i> yang sudah tersinkron di komputer, berkasnya otomatis ikut ter-upload ke cloud.</div>
+        <div class="gwarn"><b>Catatan:</b> browser bisa menolak folder induk tertentu (misalnya Downloads, Documents, atau Desktop langsung). Kalau muncul penolakan, buat subfolder baru di dalamnya dan pilih subfolder itu.</div>
+      </div>
+    </div>
+
+    <div class="gstep">
+      <div class="num">2</div>
+      <div>
+        <h3>Setiap kali membuka ESA lagi</h3>
+        <p>ESA mengingat folder pilihanmu. Namun karena aturan keamanan browser, izinnya perlu dikonfirmasi lagi di setiap sesi baru: label berwarna kuning dan tombolnya berubah menjadi <span class="ui">🔓 Aktifkan Folder Tersimpan</span>. Klik tombol itu lalu izinkan. Tidak perlu memilih folder dari awal.</p>
+        <p>Untuk memutus ESA dari folder, klik <span class="ui">Lepas Folder</span>. Berkas di dalam folder tidak ikut terhapus.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="gsec" id="g-harian">
+    <h2><span class="gn">B</span>Langkah harian: menyiapkan bukti dukung</h2>
+    <p class="gintro">Ulangi langkah 1–5 untuk setiap kegiatan, lalu lakukan langkah 6 saat mengisi e-Kinerja.</p>
+
+    <div class="gstep">
+      <div class="num">1</div>
+      <div>
+        <h3>Pilih tanggal kegiatan</h3>
+        <p>Panel <b>Tanggal Kegiatan</b> otomatis terisi hari ini. Untuk bukti hari lain, pilih tanggalnya di kalender; klik <span class="ui">📅 Hari ini</span> untuk kembali ke tanggal hari ini.</p>
+        <p>Kotak <b>Nomor berikutnya (saran)</b> menunjukkan nomor urut yang akan dipakai bukti baru, misalnya <b>25.3</b>. Nomor ini dihitung dari berkas yang sudah ada di folder dan bukti yang sedang disiapkan, jadi tidak akan bentrok.</p>
+      </div>
+    </div>
+
+    <div class="gstep">
+      <div class="num">2</div>
+      <div>
+        <h3>Ambil bukti (pilih salah satu cara)</h3>
+        <div class="gmini">
+          <div><b>① Tempel dari clipboard</b>Ambil screenshot (Windows: <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> atau <kbd>PrtScn</kbd>; Mac: <kbd>⌘</kbd>+<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>4</kbd>), buka tab ESA, lalu tekan <kbd>Ctrl</kbd>+<kbd>V</kbd> di mana saja pada halaman.</div>
+          <div><b>② Upload berkas</b>Klik <span class="ui">📁 Upload File</span> atau seret berkas gambar ke kotak putus-putus. Bisa memilih banyak gambar sekaligus.</div>
+          <div><b>③ Ambil dari layar</b>Klik <span class="ui">🖥️ Ambil dari Layar</span>, pilih layar/jendela/tab yang dibagikan, lalu klik <span class="ui">📸 Ambil Gambar</span> setiap kali perlu. Klik <span class="ui">Selesai</span> untuk berhenti berbagi.</div>
+        </div>
+        <p>Setiap gambar muncul sebagai kartu di <b>Daftar Bukti Dukung</b>. ESA otomatis mengubahnya menjadi JPEG asli dan memperkecilnya sampai ≤ 500&nbsp;KB. Label ukuran berwarna <b>hijau</b> berarti sudah sesuai batas.</p>
+      </div>
+    </div>
+
+    <div class="gstep">
+      <div class="num">3</div>
+      <div>
+        <h3>Lengkapi jam dan judul kegiatan</h3>
+        <ul>
+          <li><b>Nomor</b> (angka setelah titik): sudah terisi otomatis; ubah hanya bila perlu.</li>
+          <li><b>Jam Mulai</b> dan <b>Jam Selesai</b>: ketik jam dan menit dalam format 24 jam, misalnya <i>8</i> dan <i>0</i> untuk 08:00, atau <i>13</i> dan <i>30</i> untuk 13:30. Tidak ada AM/PM.</li>
+          <li><b>Judul kegiatan</b>: tulis sama dengan judul di e-Kinerja, karena akan menjadi bagian nama berkas.</li>
+        </ul>
+        <p><b>Durasi</b> dan <b>Poin</b> terhitung otomatis. Aturannya: 60 menit = 1 poin, jadi 90 menit = 1,5 poin dan 45 menit = 0,75 poin. Kotak jam berwarna oranye berarti jam selesai sama dengan atau lebih awal dari jam mulai — periksa lagi.</p>
+        <div class="gtip"><b>Catatan:</b> karakter yang tidak boleh ada di nama berkas (<code>\ / : * ? " &lt; &gt; |</code> dan <code>·</code>) otomatis diganti tanda <code>-</code>. Jam yang dikosongkan akan tampil sebagai <code>--.--</code> pada nama berkas.</div>
+      </div>
+    </div>
+
+    <div class="gstep">
+      <div class="num">4</div>
+      <div>
+        <h3>Sensor data sensitif <span style="font-weight:500;color:var(--text-faint);font-size:13px;">(opsional, tetapi dianjurkan)</span></h3>
+        <p>Kalau screenshot memuat NIK, nama pihak lain, nomor rekening, atau data pribadi lain yang tidak perlu terlihat, klik <span class="ui">🛡️ Sensor</span> pada kartunya.</p>
+        <ol>
+          <li><b>Seret</b> mouse (atau jari di layar sentuh) pada bagian yang mau ditutup. Bisa lebih dari satu area.</li>
+          <li>Pilih jenis sensor: <span class="ui">🌫️ Blur</span>, <span class="ui">🔳 Pixel</span>, atau <span class="ui">⬛ Blok hitam</span>.</li>
+          <li>Klik <span class="ui">💾 Terapkan</span>. Kartu menampilkan lencana <b>🛡️ N area disensor</b>.</li>
+        </ol>
+        <p>Salah tandai? Gunakan <span class="ui">↶ Urungkan</span> (atau <kbd>Ctrl</kbd>+<kbd>Z</kbd>) dan <span class="ui">Hapus semua</span> saat masih di editor. Setelah diterapkan, <span class="ui">↺ Kembalikan asli</span> bisa membuang semua sensor pada bukti yang belum disimpan.</p>
+        <div class="gwarn"><b>Penting:</b> untuk teks kecil seperti NIK atau nomor rekening, pilih <b>⬛ Blok hitam</b>. Blur dan pixel pada area yang lebar kadang masih bisa ditebak. Bagian yang disensor benar-benar diganti pada berkas hasil, sehingga tidak bisa dipulihkan darinya.</div>
+      </div>
+    </div>
+
+    <div class="gstep">
+      <div class="num">5</div>
+      <div>
+        <h3>Simpan berkas</h3>
+        <p>Klik <span class="ui">⬇️ Unduh</span> pada satu kartu, atau <span class="ui">⬇️ Unduh Semua</span> di bilah bawah untuk semua kartu. Dengan folder terpilih, berkas langsung masuk ke folder itu dan kartu bertanda <b>✓ tersimpan ke folder</b>.</p>
+        <p>Nama berkas dibuat otomatis dengan pola berikut:</p>
+        <code class="fname"><span class="f1">25</span>.<span class="f2">2</span> - <span class="f3">08.00-09.30</span> - <span class="f4">Rapat Koordinasi Renja</span>.jpg</code>
+        <div class="flegend">
+          <span class="l1">25 = tanggal (hari dalam bulan)</span>
+          <span class="l2">2 = nomor urut hari itu</span>
+          <span class="l3">08.00-09.30 = jam mulai–selesai</span>
+          <span class="l4">sisanya = judul kegiatan</span>
+        </div>
+        <p style="margin-top:10px;">Kalau nomor yang sama sudah ada di folder, ESA bertanya dulu apakah berkas lama boleh ditimpa. Pilih batal bila tidak ingin menimpa, ubah nomor di kartu, lalu simpan lagi.</p>
+        <div class="gtip"><b>Tanpa folder terpilih?</b> ESA tetap berfungsi: berkas masuk ke folder Downloads browser, dan beberapa berkas sekaligus dibungkus satu file ZIP.</div>
+      </div>
+    </div>
+
+    <div class="gstep">
+      <div class="num">6</div>
+      <div>
+        <h3>Unggah ke e-Kinerja</h3>
+        <ol>
+          <li>Buka panel <b>Lokasi Unduhan</b> dan cari bukti di tabel <b>Isi folder</b>.</li>
+          <li>Klik tombol <span class="ui">⧉</span> di kolom <b>Mulai</b>, <b>Selesai</b>, dan <b>Judul Kegiatan</b> untuk menyalin masing-masing nilainya, lalu tempel pada formulir e-Kinerja.</li>
+          <li>Lampirkan berkas JPG dari folder yang sama sebagai bukti dukung.</li>
+        </ol>
+        <div class="gwarn"><b>Ketentuan berkas:</b> jenis PDF, JPG, atau JPEG dengan ukuran maksimal 500&nbsp;KB. Berkas dari ESA sudah memenuhi keduanya.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gsec" id="g-kelola">
+    <h2><span class="gn">C</span>Mengelola berkas yang sudah tersimpan</h2>
+    <p class="gintro">Semua dilakukan dari tabel <b>Isi folder</b> di panel Lokasi Unduhan. Tabel memuat nomor, jam, durasi, poin, judul, dan jenis berkas.</p>
+    <div class="gacts">
+      <div><b>🔍 Pratinjau &amp; perbesar</b><br>Klik thumbnail atau tombol 🔍. Geser dengan ‹ › atau tombol panah, tutup dengan <kbd>Esc</kbd>. Pratinjau mengikuti filter tanggal yang aktif.</div>
+      <div><b>Filter tanggal</b><br>Pilih tanggal pada menu <span class="ui">Semua Tanggal</span> untuk menampilkan satu hari saja. Total durasi dan poin di bawah tabel mengikuti filter.</div>
+      <div><b>✏️ Edit</b><br>Ubah hari, nomor, jam, atau judul. Setelah <span class="ui">💾 Simpan</span>, nama berkas diganti sesuai perubahan; isi gambar tidak berubah.</div>
+      <div><b>🛡️ Sensor</b><br>Menyensor berkas yang sudah tersimpan. Berkas ditimpa dengan versi tersensor dan hasilnya permanen.</div>
+      <div><b>🗑️ Hapus</b><br>Menghapus berkas dari folder setelah konfirmasi. Penghapusan tidak bisa dibatalkan dari ESA, jadi pastikan berkasnya benar.</div>
+      <div><b>📊 Export Excel</b><br>Menyimpan daftar bukti (nomor, jam, durasi, poin, judul, ekstensi, plus baris total) sebagai berkas .xlsx di folder yang sama.</div>
+      <div><b>🔄 Muat Ulang</b><br>Memuat ulang isi folder, misalnya setelah kamu menambah atau memindahkan berkas lewat File Explorer.</div>
+      <div><b>🛠️ Perbaiki File Bermasalah</b><br>Muncul otomatis bila ada berkas berekstensi .jpg yang isinya sebenarnya PNG. Satu klik mengubahnya menjadi JPEG asli (lihat Masalah umum).</div>
+    </div>
+  </section>
+
+  <section class="gsec" id="g-masalah">
+    <h2><span class="gn">D</span>Masalah umum &amp; solusinya</h2>
+    <p class="gintro">Klik pertanyaan untuk melihat jawabannya.</p>
+
+    <details class="gfaq">
+      <summary>e-Kinerja menolak berkas dengan pesan "The file must be a file of type: pdf, jpg, jpeg" (galat 422)</summary>
+      <div class="ans">
+        <p>Penyebab paling umum: berkasnya <b>bernama .jpg tetapi isinya PNG</b>. e-Kinerja memeriksa isi berkas, bukan hanya ekstensinya. Berkas yang dibuat ESA versi ini selalu JPEG asli, jadi masalah ini biasanya berasal dari berkas lama atau berkas yang namanya diubah manual.</p>
+        <ul>
+          <li>Buka tabel <b>Isi folder</b> dan cari baris dengan lencana merah <b>⚠ PNG</b>.</li>
+          <li>Klik <span class="ui">🛠️ Perbaiki File Bermasalah</span>. Berkas ditimpa dengan JPEG asli, namanya tidak berubah.</li>
+          <li>Unggah ulang berkas tersebut.</li>
+        </ul>
+        <p>Jika lencana tidak ada tetapi masih ditolak, periksa juga ukurannya (harus ≤ 500&nbsp;KB) dan pastikan kolom lain di formulir e-Kinerja sudah terisi.</p>
+      </div>
+    </details>
+
+    <details class="gfaq">
+      <summary>Setelah halaman di-refresh, ESA meminta folder diaktifkan lagi</summary>
+      <div class="ans"><p>Itu normal. Folder tetap diingat, tetapi browser meminta izin ulang di setiap sesi baru. Klik <span class="ui">🔓 Aktifkan Folder Tersimpan</span> lalu izinkan.</p></div>
+    </details>
+
+    <details class="gfaq">
+      <summary>Tombol "Ambil dari Layar" tidak berfungsi atau ditolak</summary>
+      <div class="ans"><p>Fitur ini memakai izin berbagi layar browser dan bisa dibatasi di komputer kantor atau saat ESA dibuka di dalam pratinjau. Gunakan cara yang lebih stabil: ambil screenshot dengan alat bawaan lalu tekan <kbd>Ctrl</kbd>+<kbd>V</kbd> di ESA, atau pakai <span class="ui">📁 Upload File</span>.</p></div>
+    </details>
+
+    <details class="gfaq">
+      <summary>Label ukuran berwarna kuning (masih di atas 500 KB)</summary>
+      <div class="ans">
+        <p>ESA menurunkan kualitas gambar sampai ≤ 500&nbsp;KB, tetapi tidak memperkecil lebar gambar di bawah 640 piksel agar tetap terbaca. Gambar yang sangat besar atau sangat rumit kadang masih melewati batas.</p>
+        <ul><li>Ambil screenshot hanya pada area yang dibutuhkan (bukan seluruh layar).</li><li>Hindari tangkapan layar monitor beresolusi sangat tinggi bila cukup satu jendela.</li></ul>
+      </div>
+    </details>
+
+    <details class="gfaq">
+      <summary>Nomor urut meloncat, atau saya ingin mengubahnya</summary>
+      <div class="ans"><p>Meloncat itu wajar: ESA selalu memakai nomor tertinggi yang sudah ada di folder lalu menambah satu, jadi tidak pernah bentrok. Untuk mengisi celah (misalnya 25.1 yang belum ada), ubah angka nomor pada kartu sebelum menyimpan.</p></div>
+    </details>
+
+    <details class="gfaq">
+      <summary>Filter tanggal menggabungkan bulan yang berbeda</summary>
+      <div class="ans"><p>Nama berkas hanya memuat <b>hari dalam bulan</b> (1–31), bukan bulan dan tahun. Karena itu tanggal 25 dari dua bulan berbeda dianggap sama bila berada di folder yang sama. Solusinya: pakai satu folder per bulan, seperti saran di bagian Persiapan awal.</p></div>
+    </details>
+
+    <details class="gfaq">
+      <summary>Lupa menyensor sebelum menyimpan</summary>
+      <div class="ans"><p>Tidak masalah: klik <span class="ui">🛡️</span> pada baris berkasnya di tabel <b>Isi folder</b>, tandai areanya, lalu terapkan. Berkas ditimpa dengan versi tersensor. Ingat bahwa berkas yang sudah pernah diunggah ke e-Kinerja atau dibagikan ke pihak lain tidak ikut berubah.</p></div>
+    </details>
+
+    <details class="gfaq">
+      <summary>Saya memakai browser selain Chrome atau Edge</summary>
+      <div class="ans"><p>Pemilihan folder otomatis tidak tersedia, jadi berkas masuk ke folder Downloads (beberapa berkas sekaligus dalam bentuk ZIP) dan tabel <b>Isi folder</b> tidak tampil. Pengambilan bukti, kompresi, penamaan, jam, poin, dan sensor tetap berfungsi. Untuk pengalaman lengkap, gunakan Chrome atau Edge.</p></div>
+    </details>
+  </section>
+
+  <section class="gsec" id="g-pintasan">
+    <h2><span class="gn">E</span>Pintasan keyboard</h2>
+    <table class="gkeys">
+      <tr><td><kbd>Ctrl</kbd> + <kbd>V</kbd></td><td>Menempel screenshot dari clipboard sebagai bukti baru (di mana saja pada halaman ESA)</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Menutup pratinjau gambar atau editor sensor</td></tr>
+      <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Pindah ke gambar sebelumnya / berikutnya saat pratinjau terbuka</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Mengurungkan area sensor terakhir di editor</td></tr>
+      <tr><td><kbd>Tab</kbd>, <kbd>Enter</kbd></td><td>Berpindah antar-thumbnail dan membukanya tanpa mouse</td></tr>
+    </table>
+
+    <div class="gprivacy"><b>Privasi:</b> ESA tidak punya server. Gambar dan nama berkas diproses di browser dan hanya disimpan di folder yang kamu pilih. Yang tercatat oleh penghitung akses hanyalah waktu kunjungan dan ID anonim acak, tanpa nama, berkas, atau isi bukti.</div>
+  </section>
+
+  <div class="guide-end"><a class="btn btn-primary" href="#">Mulai pakai ESA →</a></div>
+</main>
 
 <footer class="actions">
   <div class="count"><b id="itemCount">0</b> bukti siap diunduh</div>
@@ -2387,6 +2741,32 @@ async function censorFolderFile(idx){
     }
   });
 }
+
+// --- Halaman panduan (dibuka lewat alamat #panduan) ---
+const GUIDE_TITLE = 'Panduan Penggunaan — ESA';
+const APP_TITLE = document.title;
+function syncGuideView(){
+  const on = location.hash === '#panduan';
+  document.body.classList.toggle('view-guide', on);
+  document.title = on ? GUIDE_TITLE : APP_TITLE;
+  if(on) window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', syncGuideView);
+syncGuideView();
+document.querySelectorAll('[data-guide-target]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = document.getElementById(btn.dataset.guideTarget);
+    if(target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+document.getElementById('guidePrint').addEventListener('click', () => window.print());
+// Saat dicetak, buka semua jawaban "Masalah umum" supaya ikut tercetak
+let guideOpened = [];
+window.addEventListener('beforeprint', () => {
+  guideOpened = [];
+  document.querySelectorAll('#guidePage details').forEach(d => { if(!d.open){ d.open = true; guideOpened.push(d); } });
+});
+window.addEventListener('afterprint', () => { guideOpened.forEach(d => { d.open = false; }); guideOpened = []; });
 
 if(!IS_AUTH_POPUP){
   renderItems();
