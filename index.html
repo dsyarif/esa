@@ -264,6 +264,43 @@
     position:relative;cursor:zoom-in;transition:border-color .15s ease;
   }
   .thumb:hover, .thumb:focus-visible{border-color:var(--violet);outline:none;}
+  /* --- Pilihan mode (tunggal / multi halaman) & baki halaman PDF --- */
+  .mode-label{font-size:12px;color:var(--text-dim);font-weight:500;margin:0 0 8px;}
+  .mode-switch{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-bottom:16px;}
+  .mode-opt{
+    appearance:none;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;
+    display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:12px;
+    background:var(--bg-1);border:1.5px solid var(--line);color:var(--text-dim);
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .mode-opt:hover{border-color:var(--violet-dim);}
+  .mode-opt.active{border-color:var(--violet);background:rgba(139,92,246,0.13);box-shadow:0 0 0 1px var(--violet) inset;}
+  .mode-opt .mo-ico{font-size:24px;line-height:1;}
+  .mode-opt b{display:block;font-size:14px;color:var(--text);}
+  .mode-opt small{display:block;font-size:12px;color:var(--text-faint);margin-top:2px;line-height:1.4;}
+  .tray{margin-top:16px;border:1px solid var(--violet-dim);border-radius:12px;background:var(--bg-1);padding:14px;}
+  .tray-head{display:flex;justify-content:space-between;gap:8px 14px;flex-wrap:wrap;align-items:baseline;margin-bottom:8px;}
+  .tray-head b{font-family:'Space Grotesk',sans-serif;font-size:14px;}
+  .tray-head span{font-size:12px;color:var(--text-faint);}
+  .tray-empty{font-size:13px;color:var(--text-faint);padding:16px 6px;text-align:center;}
+  .tray-pages{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;}
+  .tpage{flex:none;width:136px;border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden;}
+  .tpage .tp-img{position:relative;height:94px;background:#000;cursor:zoom-in;}
+  .tpage .tp-img:focus-visible{outline:2px solid var(--violet);outline-offset:-2px;}
+  .tpage img{width:100%;height:100%;object-fit:cover;display:block;}
+  .tpage .tp-no{position:absolute;left:5px;top:5px;background:var(--violet);color:#fff;font-weight:700;font-size:11px;border-radius:6px;padding:1px 7px;}
+  .tpage .tp-size{position:absolute;right:5px;bottom:5px;font-size:10px;background:rgba(15,10,28,0.82);border-radius:6px;padding:1px 6px;color:var(--text-dim);}
+  .tpage .tp-actions{display:flex;justify-content:space-between;gap:3px;padding:6px;}
+  .tpage .tp-actions .btn-copy:disabled{opacity:.3;cursor:not-allowed;}
+  .tray-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+  .pdf-tag{
+    font-size:11px;font-weight:600;white-space:nowrap;color:var(--pink);
+    background:rgba(232,121,185,0.10);border:1px solid rgba(232,121,185,0.30);border-radius:20px;padding:3px 8px;
+  }
+  .thumb .pg-badge{
+    position:absolute;right:5px;top:5px;z-index:1;font-size:10.5px;font-weight:700;color:#fff;
+    background:rgba(232,121,185,0.92);border-radius:6px;padding:1px 6px;
+  }
   .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
   .thumb::after{
     content:'🔍 Perbesar';position:absolute;left:0;right:0;bottom:0;
@@ -358,6 +395,7 @@
   .item input[type=text]{width:100%;}
   .item-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   .item-actions .btn{padding:7px 12px;font-size:12.5px;}
+  .fthumb.pdf{font-size:18px;}
 
   .saved-tag{font-size:11px;color:var(--good);font-weight:600;}
 
@@ -616,6 +654,15 @@
 
   <div class="panel">
     <div class="panel-title"><span class="n">3</span>Ambil Bukti</div>
+    <div class="mode-label" id="modeLabel">Pilih jenis bukti sebelum mulai mengambil screenshot:</div>
+    <div class="mode-switch" role="radiogroup" aria-labelledby="modeLabel">
+      <button type="button" class="mode-opt active" data-mode="single" role="radio" aria-checked="true">
+        <span class="mo-ico">🖼️</span><span><b>Tunggal</b><small>1 screenshot = 1 bukti (berkas JPEG)</small></span>
+      </button>
+      <button type="button" class="mode-opt" data-mode="multi" role="radio" aria-checked="false">
+        <span class="mo-ico">📑</span><span><b>Multi halaman</b><small>Beberapa screenshot = 1 bukti (satu berkas PDF)</small></span>
+      </button>
+    </div>
     <div class="row">
       <button class="btn btn-primary" id="btnScreenCapture">🖥️ Ambil dari Layar</button>
       <button class="btn btn-ghost" id="btnUpload">📁 Upload File</button>
@@ -631,6 +678,16 @@
       <div class="bar">
         <button class="btn btn-primary" id="btnGrab">📸 Ambil Gambar</button>
         <button class="btn btn-ghost" id="btnStopCapture">Selesai</button>
+      </div>
+    </div>
+
+    <div class="tray" id="tray" style="display:none;">
+      <div class="tray-head"><b>📑 Halaman PDF</b><span id="trayInfo"></span></div>
+      <div class="tray-empty" id="trayEmpty">Belum ada halaman. Ambil screenshot (Ctrl+V, Upload, atau Ambil dari Layar) — setiap gambar jadi satu halaman, urutannya bisa diatur di sini.</div>
+      <div class="tray-pages" id="trayPages"></div>
+      <div class="tray-actions">
+        <button type="button" class="btn btn-primary" id="btnBuildPdf" disabled>✅ Selesai — Buat PDF</button>
+        <button type="button" class="btn btn-ghost" id="btnClearTray" disabled>🗑️ Kosongkan</button>
       </div>
     </div>
 
@@ -874,7 +931,7 @@
 
 <footer class="actions">
   <div class="count"><b id="itemCount">0</b> bukti siap diunduh</div>
-  <div style="display:flex;gap:10px;">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
     <button class="btn btn-danger" id="btnClearAll">Hapus Semua</button>
     <button class="btn btn-primary" id="btnDownloadAll" disabled>⬇️ Unduh Semua</button>
   </div>
@@ -1130,13 +1187,17 @@ function renderItems(){
     const timeWarn = (entry.startTime && entry.endTime && entry.endTime <= entry.startTime) ? 'time-warn' : '';
 
     el.innerHTML = `
-      <div class="thumb" data-id="${entry.id}" role="button" tabindex="0" title="Klik untuk memperbesar" aria-label="Perbesar pratinjau bukti ${entry.day}.${entry.seq}"><img src="${entry.url}" alt=""></div>
+      <div class="thumb" data-id="${entry.id}" role="button" tabindex="0" title="${entry.kind === 'pdf' ? 'Klik untuk melihat semua halaman' : 'Klik untuk memperbesar'}" aria-label="${entry.kind === 'pdf' ? 'Lihat halaman PDF' : 'Perbesar pratinjau bukti'} ${entry.day}.${entry.seq}">
+        ${entry.kind === 'pdf' ? `<span class="pg-badge">📑 ${entry.pages.length} hal.</span>` : ''}
+        <img src="${entry.url}" alt="">
+      </div>
       <div class="item-body">
         <div class="item-top">
           <div class="seq-edit">
             <span class="day-part">${entry.day}.</span>
             <input type="number" min="1" class="seqInput" data-id="${entry.id}" value="${entry.seq}">
           </div>
+          ${entry.kind === 'pdf' ? `<span class="pdf-tag" title="Satu berkas PDF berisi beberapa halaman">📑 PDF · ${entry.pages.length} halaman</span>` : ''}
           ${entry.censored ? `<span class="censor-tag" title="Area sensitif sudah diganti pada gambar ini">🛡️ ${entry.censored} area disensor</span>` : ''}
           <span class="size-tag ${sizeClass}">${sizeLabel}</span>
         </div>
@@ -1169,7 +1230,9 @@ function renderItems(){
         <input type="text" placeholder="Judul kegiatan…" value="${entry.title.replace(/"/g,'&quot;')}" data-id="${entry.id}" class="titleInput">
         <div class="item-actions">
           <button class="btn btn-ghost btnDownloadOne" data-id="${entry.id}">⬇️ Unduh</button>
-          <button class="btn btn-ghost btnCensor" data-id="${entry.id}" ${entry.processing ? 'disabled' : ''} title="Blur / sensor area sensitif (NIK, nama, nomor, dll.)">🛡️ Sensor</button>
+          ${entry.kind === 'pdf'
+            ? `<button class="btn btn-ghost btnEditPages" data-id="${entry.id}" title="Kembalikan ke baki untuk menambah, menghapus, mengurutkan, atau menyensor halaman">📑 Ubah halaman</button>`
+            : `<button class="btn btn-ghost btnCensor" data-id="${entry.id}" ${entry.processing ? 'disabled' : ''} title="Blur / sensor area sensitif (NIK, nama, nomor, dll.)">🛡️ Sensor</button>`}
           <button class="btn btn-danger btnRemove" data-id="${entry.id}">Hapus</button>
           ${savedTag}
         </div>
@@ -1222,9 +1285,17 @@ function renderItems(){
   });
   itemsGrid.querySelectorAll('.btnRemove').forEach(btn => {
     btn.addEventListener('click', e => {
+      const gone = entries.find(x => x.id === Number(e.target.dataset.id));
+      if(gone) releaseEntry(gone);
       entries = entries.filter(x => x.id !== Number(e.target.dataset.id));
       renderItems();
       updateSeqPreview();
+    });
+  });
+  itemsGrid.querySelectorAll('.btnEditPages').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const entry = entries.find(x => x.id === Number(e.currentTarget.dataset.id));
+      if(entry) editPdfPages(entry);
     });
   });
   itemsGrid.querySelectorAll('.btnCensor').forEach(btn => {
@@ -1844,7 +1915,7 @@ function observeThumbs(){
   const els = fileList.querySelectorAll('.fthumb[data-idx]');
   const enqueue = el => {
     const rec = folderFilesCache[Number(el.dataset.idx)];
-    if(!rec || rec.thumbUrl) return;
+    if(!rec || rec.thumbUrl || (rec.ext || '').toLowerCase() === 'pdf') return;
     thumbQueue.push({ rec, el });
     pumpThumbs();
   };
@@ -1876,9 +1947,9 @@ async function refreshFolderFiles(){
       if(a.day !== b.day) return (a.day || 0) - (b.day || 0);
       return (a.seq || 0) - (b.seq || 0);
     });
-    const imageExts = ['jpg','jpeg','png'];
+    const visibleExts = ['jpg','jpeg','png','pdf'];
     clearFolderThumbs();
-    folderFilesCache = records.filter(r => imageExts.includes((r.ext || '').toLowerCase()));
+    folderFilesCache = records.filter(r => visibleExts.includes((r.ext || '').toLowerCase()));
 
     updateDateFilterOptions();
     renderFolderTable();
@@ -1968,7 +2039,7 @@ function renderFolderTable(){
     }
     return `
       <div class="file-row ${f.mismatch ? 'mismatch' : ''}">
-        <div class="fthumb" data-idx="${idx}" role="button" tabindex="0" title="Klik untuk memperbesar" aria-label="Perbesar ${escHtml(f.name)}">${f.thumbUrl ? `<img src="${f.thumbUrl}" alt="">` : '🖼️'}</div>
+        <div class="fthumb ${f.ext.toLowerCase() === 'pdf' ? 'pdf' : ''}" data-idx="${idx}" role="button" tabindex="0" title="${f.ext.toLowerCase() === 'pdf' ? 'Klik untuk membuka PDF' : 'Klik untuk memperbesar'}" aria-label="${f.ext.toLowerCase() === 'pdf' ? 'Buka' : 'Perbesar'} ${escHtml(f.name)}">${f.ext.toLowerCase() === 'pdf' ? '📄' : (f.thumbUrl ? `<img src="${f.thumbUrl}" alt="">` : '🖼️')}</div>
         <span class="col-no">${f.day !== null ? f.day + '.' + f.seq : '—'}</span>
         <span class="col-time"><span>${f.start || '—'}</span>${f.start ? '<button class="btn-copy" data-copy="'+f.start+'">⧉</button>' : ''}</span>
         <span class="col-time"><span>${f.end || '—'}</span>${f.end ? '<button class="btn-copy" data-copy="'+f.end+'">⧉</button>' : ''}</span>
@@ -1977,8 +2048,8 @@ function renderFolderTable(){
         <span class="col-title"><span title="${escHtml(f.title)}">${escHtml(f.title)}</span><button class="btn-copy" data-copy="${escHtml(f.title)}">⧉</button></span>
         <span class="col-ext">${f.ext}${f.mismatch ? `<span class="mismatch-badge" title="Nama file .${f.ext} tapi isinya sebenarnya ${f.actualFormat.toUpperCase()}">⚠ ${f.actualFormat.toUpperCase()}</span>` : ''}</span>
         <span class="col-actions">
-          <button class="btn-copy btnPreviewFile" data-idx="${idx}" title="Perbesar">🔍</button>
-          <button class="btn-copy btnCensorFile" data-idx="${idx}" title="Sensor area sensitif">🛡️</button>
+          <button class="btn-copy btnPreviewFile" data-idx="${idx}" title="${f.ext.toLowerCase() === 'pdf' ? 'Buka PDF' : 'Perbesar'}">${f.ext.toLowerCase() === 'pdf' ? '📄' : '🔍'}</button>
+          ${f.ext.toLowerCase() === 'pdf' ? '' : `<button class="btn-copy btnCensorFile" data-idx="${idx}" title="Sensor area sensitif">🛡️</button>`}
           <button class="btn-copy btnEditFile" data-idx="${idx}" title="Edit">✏️</button>
           <button class="btn-copy btnDeleteFile" data-idx="${idx}" title="Hapus">🗑️</button>
         </span>
@@ -2024,16 +2095,16 @@ function renderFolderTable(){
   });
 
   fileList.querySelectorAll('.fthumb').forEach(el => {
-    el.addEventListener('click', () => openFolderPreview(Number(el.dataset.idx)));
+    el.addEventListener('click', () => openFolderItem(Number(el.dataset.idx)));
     el.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openFolderPreview(Number(el.dataset.idx)); }
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openFolderItem(Number(el.dataset.idx)); }
     });
   });
   fileList.querySelectorAll('.btnCensorFile').forEach(btn => {
     btn.addEventListener('click', () => censorFolderFile(Number(btn.dataset.idx)));
   });
   fileList.querySelectorAll('.btnPreviewFile').forEach(btn => {
-    btn.addEventListener('click', () => openFolderPreview(Number(btn.dataset.idx)));
+    btn.addEventListener('click', () => openFolderItem(Number(btn.dataset.idx)));
   });
   observeThumbs();
 
@@ -2164,13 +2235,104 @@ async function saveBlobToFolder(blob, filename){
   return false;
 }
 
+function entryExt(entry){ return entry.kind === 'pdf' ? 'pdf' : 'jpg'; }
 function buildFilename(entry){
-  return `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)}.jpg`;
+  return `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)}.${entryExt(entry)}`;
 }
 
 function findFolderConflict(entry){
   return folderFilesCache.find(f => f.day === entry.day && f.seq === entry.seq);
 }
+
+
+// --- Gabung beberapa bukti jadi satu PDF (penulis PDF minimal, tanpa pustaka tambahan) ---
+// Tiap bukti (sudah berupa JPEG) ditempatkan sebagai satu halaman A4, diskalakan & ditengahkan.
+// JPEG ditanam apa adanya lewat filter /DCTDecode — tidak ada penyandian ulang, mutu tidak berkurang.
+async function buildCombinedPdf(items, onProgress){
+  const A4P = [595.28, 841.89]; // pt, potret
+  const MARGIN = 24;
+  const enc = new TextEncoder();
+  const chunks = [];
+  const offsets = [];
+  let offset = 0;
+  function push(part){
+    const bytes = typeof part === 'string' ? enc.encode(part) : part;
+    chunks.push(bytes);
+    offset += bytes.length;
+  }
+  function obj(num, body){
+    offsets[num] = offset;
+    push(`${num} 0 obj
+`);
+    if(typeof body === 'string'){ push(body); }
+    else { push(body.head); push(body.bytes); push(body.tail); }
+    push('endobj\n');
+  }
+
+  const pages = [];
+  for(let i = 0; i < items.length; i++){
+    if(onProgress) onProgress(i + 1, items.length);
+    const bytes = new Uint8Array(await items[i].blob.arrayBuffer());
+    const bitmap = await createImageBitmap(items[i].blob);
+    pages.push({ bytes, width: bitmap.width, height: bitmap.height });
+    if(bitmap.close) bitmap.close();
+  }
+
+  push('%PDF-1.4\n');
+  const kids = pages.map((_, i) => `${3 + i * 3} 0 R`).join(' ');
+  obj(1, `<< /Type /Catalog /Pages 2 0 R >>
+`);
+  obj(2, `<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>
+`);
+
+  pages.forEach((pg, i) => {
+    const pageNum = 3 + i * 3, contentNum = pageNum + 1, imageNum = pageNum + 2;
+    const landscape = pg.width > pg.height;
+    const pw = landscape ? A4P[1] : A4P[0];
+    const ph = landscape ? A4P[0] : A4P[1];
+    const availW = pw - MARGIN * 2, availH = ph - MARGIN * 2;
+    const scale = Math.min(availW / pg.width, availH / pg.height);
+    const dw = pg.width * scale, dh = pg.height * scale;
+    const tx = (pw - dw) / 2, ty = (ph - dh) / 2;
+    const content = `q
+${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${tx.toFixed(2)} ${ty.toFixed(2)} cm
+/Im0 Do
+Q`;
+    const contentBytes = enc.encode(content);
+
+    obj(pageNum, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw.toFixed(2)} ${ph.toFixed(2)}] /Resources << /XObject << /Im0 ${imageNum} 0 R >> >> /Contents ${contentNum} 0 R >>
+`);
+    obj(contentNum, { head: `<< /Length ${contentBytes.length} >>
+stream
+`, bytes: contentBytes, tail: '\nendstream\n' });
+    obj(imageNum, { head: `<< /Type /XObject /Subtype /Image /Width ${pg.width} /Height ${pg.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${pg.bytes.length} >>
+stream
+`, bytes: pg.bytes, tail: '\nendstream\n' });
+  });
+
+  const totalObjs = 2 + pages.length * 3;
+  const xrefOffset = offset;
+  push(`xref
+0 ${totalObjs + 1}
+0000000000 65535 f 
+`);
+  for(let n = 1; n <= totalObjs; n++){
+    push(String(offsets[n] || 0).padStart(10, '0') + ' 00000 n \n');
+  }
+  push(`trailer
+<< /Size ${totalObjs + 1} /Root 1 0 R >>
+startxref
+${xrefOffset}
+%%EOF`);
+
+  let total = 0;
+  chunks.forEach(c => { total += c.length; });
+  const out = new Uint8Array(total);
+  let pos = 0;
+  chunks.forEach(c => { out.set(c, pos); pos += c.length; });
+  return new Blob([out], { type: 'application/pdf' });
+}
+
 
 async function downloadEntry(entry){
   if(storage){
@@ -2186,7 +2348,259 @@ async function downloadEntry(entry){
   if(saved) refreshFolderFiles();
 }
 
+// ===== Mode pengambilan: Tunggal (JPEG) atau Multi halaman (satu PDF) =====
+const CAPTURE_MODE_KEY = 'captureMode';
+const PDF_OVERHEAD_BASE = 1200, PDF_OVERHEAD_PAGE = 700; // perkiraan byte struktur PDF
+let captureMode = 'single';
+let trayPages = [];   // halaman yang sedang disusun: { id, original, source, natural, naturalUrl, final, finalUrl, censored, processing }
+let trayMeta = null;  // data kartu (judul, jam, nomor) yang dibawa saat "Ubah halaman"
+let trayIdCounter = 0;
+const trayEl = document.getElementById('tray');
+const trayPagesEl = document.getElementById('trayPages');
+const trayEmpty = document.getElementById('trayEmpty');
+const trayInfo = document.getElementById('trayInfo');
+const btnBuildPdf = document.getElementById('btnBuildPdf');
+const btnClearTray = document.getElementById('btnClearTray');
+const DROP_HINTS = {
+  single: 'Tekan <b>Ctrl+V</b> di mana saja pada halaman ini untuk menempel screenshot dari clipboard — atau seret file gambar ke sini.',
+  multi: 'Mode <b>Multi halaman</b>: tempel (<b>Ctrl+V</b>), seret file, atau ambil dari layar berulang kali — setiap gambar menjadi <b>satu halaman</b> di baki PDF di bawah.'
+};
+
+function releasePage(pg){
+  if(pg.naturalUrl){ URL.revokeObjectURL(pg.naturalUrl); pg.naturalUrl = null; }
+  if(pg.finalUrl){ URL.revokeObjectURL(pg.finalUrl); pg.finalUrl = null; }
+}
+function releaseEntry(entry){
+  if(entry.kind === 'pdf') (entry.pages || []).forEach(releasePage);
+  else if(entry.url) URL.revokeObjectURL(entry.url);
+}
+
+function renderModeUI(){
+  document.querySelectorAll('.mode-opt').forEach(b => {
+    const on = b.dataset.mode === captureMode;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  trayEl.style.display = captureMode === 'multi' ? '' : 'none';
+  dropzone.innerHTML = DROP_HINTS[captureMode];
+  if(captureMode === 'multi') renderTray();
+}
+function setCaptureMode(mode, opts = {}){
+  if(mode === captureMode){ renderModeUI(); return; }
+  if(captureMode === 'multi' && mode === 'single' && trayPages.length && !opts.skipConfirm){
+    if(!confirm(`Ada ${trayPages.length} halaman di baki yang belum dibuat jadi PDF. Pindah ke mode Tunggal akan membuangnya. Lanjutkan?`)) return;
+    clearTray();
+  }
+  captureMode = mode;
+  renderModeUI();
+  if(opts.persist !== false) idbSet(CAPTURE_MODE_KEY, mode).catch(() => { /* abaikan */ });
+}
+document.querySelectorAll('.mode-opt').forEach(b => b.addEventListener('click', () => setCaptureMode(b.dataset.mode)));
+async function initCaptureMode(){
+  let saved = null;
+  try{ saved = await idbGet(CAPTURE_MODE_KEY); } catch(e){ /* IndexedDB tidak tersedia */ }
+  if(saved === 'multi') captureMode = 'multi';
+  renderModeUI();
+}
+
+// --- Baki halaman ---
+function clearTray(){
+  trayPages.forEach(releasePage);
+  trayPages = [];
+  trayMeta = null;
+  renderTray();
+}
+async function addTrayPage(rawBlob){
+  const pg = { id: ++trayIdCounter, original: rawBlob, source: rawBlob, natural: rawBlob, naturalUrl: URL.createObjectURL(rawBlob), final: null, finalUrl: null, censored: 0, processing: true };
+  trayPages.push(pg);
+  renderTray();
+  try{
+    // Sama seperti mode Tunggal: selalu jadi JPEG asli (PDF menanam JPEG apa adanya)
+    const compressed = await compressImage(rawBlob, MAX_BYTES);
+    URL.revokeObjectURL(pg.naturalUrl);
+    pg.natural = compressed;
+    pg.naturalUrl = URL.createObjectURL(compressed);
+    pg.processing = false;
+  } catch(err){
+    console.error('Kompresi halaman gagal', err);
+    releasePage(pg);
+    trayPages = trayPages.filter(x => x !== pg);
+    alert('Salah satu gambar tidak bisa dibaca sehingga tidak dimasukkan ke baki.');
+  }
+  renderTray();
+}
+function renderTray(){
+  const n = trayPages.length;
+  trayPagesEl.innerHTML = trayPages.map((pg, i) => `
+    <div class="tpage" data-id="${pg.id}">
+      <div class="tp-img" data-act="view" role="button" tabindex="0" title="Klik untuk memperbesar">
+        <img src="${pg.naturalUrl}" alt="Halaman ${i + 1}">
+        <span class="tp-no">${i + 1}${pg.censored ? ' 🛡️' : ''}</span>
+        <span class="tp-size">${pg.processing ? 'mengompres…' : fmtSize(pg.natural.size)}</span>
+      </div>
+      <div class="tp-actions">
+        <button type="button" class="btn-copy" data-act="left" title="Geser ke kiri" ${i === 0 ? 'disabled' : ''}>◀</button>
+        <button type="button" class="btn-copy" data-act="censor" title="Sensor area sensitif" ${pg.processing ? 'disabled' : ''}>🛡️</button>
+        <button type="button" class="btn-copy" data-act="del" title="Hapus halaman ini">✕</button>
+        <button type="button" class="btn-copy" data-act="right" title="Geser ke kanan" ${i === n - 1 ? 'disabled' : ''}>▶</button>
+      </div>
+    </div>`).join('');
+  trayEmpty.style.display = n ? 'none' : 'block';
+  const est = trayPages.reduce((sum, pg) => sum + (pg.natural ? pg.natural.size : 0), 0) + PDF_OVERHEAD_BASE + PDF_OVERHEAD_PAGE * n;
+  trayInfo.textContent = n ? `${n} halaman · perkiraan ${fmtSize(est)}${est > MAX_BYTES ? ' → akan dikecilkan otomatis agar ≤ 500 KB' : ''}` : '';
+  btnBuildPdf.disabled = n === 0 || trayPages.some(pg => pg.processing);
+  btnBuildPdf.textContent = n ? `✅ Selesai — Buat PDF (${n} halaman)` : '✅ Selesai — Buat PDF';
+  btnClearTray.disabled = n === 0;
+}
+trayPagesEl.addEventListener('click', e => {
+  const card = e.target.closest('.tpage');
+  const btn = e.target.closest('[data-act]');
+  if(!card || !btn || btn.disabled) return;
+  const idx = trayPages.findIndex(pg => pg.id === Number(card.dataset.id));
+  if(idx < 0) return;
+  const act = btn.dataset.act;
+  if((act === 'left' && idx > 0) || (act === 'right' && idx < trayPages.length - 1)){
+    const j = act === 'left' ? idx - 1 : idx + 1;
+    [trayPages[idx], trayPages[j]] = [trayPages[j], trayPages[idx]];
+    renderTray();
+  } else if(act === 'del'){
+    releasePage(trayPages[idx]);
+    trayPages.splice(idx, 1);
+    renderTray();
+  } else if(act === 'censor'){
+    censorTrayPage(trayPages[idx]);
+  } else if(act === 'view'){
+    openTrayPreview(idx);
+  }
+});
+trayPagesEl.addEventListener('keydown', e => {
+  if((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.act === 'view'){ e.preventDefault(); e.target.click(); }
+});
+btnClearTray.addEventListener('click', () => {
+  if(trayPages.length && !confirm(`Buang ${trayPages.length} halaman di baki?`)) return;
+  clearTray();
+});
+function openTrayPreview(idx){
+  const n = trayPages.length;
+  openPreviewList(trayPages.map((pg, i) => ({
+    getUrl: async () => pg.naturalUrl,
+    caption: `Halaman ${i + 1} dari ${n}${pg.natural ? ' · ' + fmtSize(pg.natural.size) : ''}`
+  })), idx);
+}
+function censorTrayPage(pg){
+  if(pg.processing) return;
+  openEditor({
+    title: `Halaman ${trayPages.indexOf(pg) + 1} dari ${trayPages.length}`,
+    blob: pg.natural,
+    source: pg.original,
+    async onSave(canvas, count, fromSource){
+      const png = await canvasToBlob(canvas, 'image/png');
+      const nat = await compressImage(png, MAX_BYTES);
+      if(pg.naturalUrl) URL.revokeObjectURL(pg.naturalUrl);
+      pg.source = png; // sumber tanpa-rugi terbaru, dipakai bila PDF perlu dikecilkan lagi
+      pg.natural = nat;
+      pg.naturalUrl = URL.createObjectURL(nat);
+      pg.censored = (fromSource ? 0 : (pg.censored || 0)) + count;
+      renderTray();
+    }
+  });
+}
+
+// Menyusun PDF yang totalnya ≤ 500 KB. Halaman kecil dipertahankan; sisa jatah dibagi ke halaman besar
+// ("water-filling"), lalu halaman besar dikompres ulang dari sumbernya sampai muat.
+async function buildPdfWithinBudget(pages, report){
+  const n = pages.length;
+  const budget = MAX_BYTES - (PDF_OVERHEAD_BASE + PDF_OVERHEAD_PAGE * n);
+  const blobs = pages.map(pg => pg.natural);
+  let total = blobs.reduce((sum, b) => sum + b.size, 0);
+  if(total > budget){
+    const sizes = blobs.map(b => b.size).sort((a, b) => a - b);
+    let remaining = budget, cap = budget / n;
+    for(let i = 0; i < n; i++){
+      const share = remaining / (n - i);
+      if(sizes[i] <= share) remaining -= sizes[i];
+      else { cap = share; break; }
+    }
+    cap = Math.max(8000, cap * 0.97);
+    for(let attempt = 0; attempt < 6 && total > budget; attempt++){
+      for(let i = 0; i < n; i++){
+        if(blobs[i].size > cap){
+          if(report) report(`⏳ Mengecilkan halaman ${i + 1}/${n}…`);
+          blobs[i] = await compressImage(pages[i].source, cap);
+        }
+      }
+      total = blobs.reduce((sum, b) => sum + b.size, 0);
+      cap *= 0.85;
+    }
+  }
+  if(report) report('⏳ Menyusun PDF…');
+  const pdf = await buildCombinedPdf(blobs.map(b => ({ blob: b })));
+  return { pdf, blobs };
+}
+
+async function buildPdfFromTray(){
+  if(!trayPages.length || trayPages.some(pg => pg.processing)) return;
+  const day = trayMeta && trayMeta.day ? trayMeta.day : selectedDay();
+  if(day === null){ alert('Pilih tanggal kegiatan terlebih dulu.'); return; }
+  const label = btnBuildPdf.textContent;
+  btnBuildPdf.disabled = true;
+  try{
+    const { pdf, blobs } = await buildPdfWithinBudget(trayPages, msg => { btnBuildPdf.textContent = msg; });
+    trayPages.forEach((pg, i) => {
+      if(pg.finalUrl) URL.revokeObjectURL(pg.finalUrl);
+      pg.final = blobs[i];
+      pg.finalUrl = URL.createObjectURL(blobs[i]);
+    });
+    const meta = trayMeta || {};
+    const entry = {
+      id: ++idCounter, kind: 'pdf', blob: pdf, url: trayPages[0].finalUrl, pages: trayPages,
+      day, seq: meta.seq || (getMaxSeqForDay(day) + 1),
+      title: meta.title || '', startH: meta.startH || '', startM: meta.startM || '', endH: meta.endH || '', endM: meta.endM || '',
+      startTime: meta.startTime || '', endTime: meta.endTime || '',
+      sizeBytes: pdf.size, processing: false, savedToFolder: false, sourceBlob: null,
+      censored: trayPages.reduce((sum, pg) => sum + (pg.censored || 0), 0)
+    };
+    entries.push(entry);
+    trayPages = [];   // kepemilikan gambar pindah ke kartu PDF
+    trayMeta = null;
+    renderTray();
+    renderItems();
+    updateSeqPreview();
+    if(pdf.size > MAX_BYTES){
+      alert(`PDF berukuran ${fmtSize(pdf.size)}, masih di atas batas 500 KB walau halamannya sudah dikecilkan. Kurangi jumlah halaman atau ambil screenshot pada area yang lebih kecil.`);
+    }
+    const last = itemsGrid.lastElementChild;
+    if(last && last.scrollIntoView) last.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch(err){
+    console.error(err);
+    alert('Gagal membuat PDF: ' + ((err && err.message) || err));
+  } finally {
+    btnBuildPdf.textContent = label;
+    renderTray();
+  }
+}
+btnBuildPdf.addEventListener('click', buildPdfFromTray);
+
+// Mengembalikan kartu PDF ke baki (tambah / hapus / urutkan / sensor halaman), jam & judul ikut terbawa
+function editPdfPages(entry){
+  if(trayPages.length && !confirm(`Baki masih berisi ${trayPages.length} halaman yang belum dibuat jadi PDF. Halaman itu akan dibuang dan diganti dengan halaman dari PDF ini. Lanjutkan?`)) return;
+  trayPages.forEach(releasePage);
+  entry.pages.forEach(pg => {
+    if(pg.finalUrl){ URL.revokeObjectURL(pg.finalUrl); pg.finalUrl = null; }
+    pg.final = null;
+  });
+  trayPages = entry.pages;
+  trayMeta = { day: entry.day, seq: entry.seq, title: entry.title, startH: entry.startH, startM: entry.startM, endH: entry.endH, endM: entry.endM, startTime: entry.startTime, endTime: entry.endTime };
+  entries = entries.filter(e => e.id !== entry.id);
+  setCaptureMode('multi', { skipConfirm: true });
+  renderTray();
+  renderItems();
+  updateSeqPreview();
+  trayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 async function addEntry(rawBlob){
+  if(captureMode === 'multi') return addTrayPage(rawBlob);
   const day = selectedDay();
   if(day === null){ alert('Pilih tanggal kegiatan terlebih dulu.'); return; }
   const seq = getMaxSeqForDay(day) + 1;
@@ -2272,7 +2686,7 @@ function stopCapture(){
 
 btnClearAll.addEventListener('click', () => {
   if(entries.length && !confirm('Hapus semua bukti dukung yang sudah diambil?')) return;
-  entries.forEach(e => URL.revokeObjectURL(e.url));
+  entries.forEach(releaseEntry);
   entries = [];
   renderItems();
   updateSeqPreview();
@@ -2297,7 +2711,7 @@ btnDownloadAll.addEventListener('click', async () => {
         let filename = buildFilename(entry);
         let unique = filename, n = 2;
         while(usedNames.has(unique)){
-          unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).jpg`;
+          unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).${entryExt(entry)}`;
           n++;
         }
         usedNames.add(unique);
@@ -2322,7 +2736,7 @@ btnDownloadAll.addEventListener('click', async () => {
     let filename = buildFilename(entry);
     let unique = filename, n = 2;
     while(usedNames.has(unique)){
-      unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).jpg`;
+      unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).${entryExt(entry)}`;
       n++;
     }
     usedNames.add(unique);
@@ -2442,7 +2856,16 @@ function closePreview(){
 
 // Bukti yang sedang disiapkan (daftar di bawah)
 function openPreview(entryId){
-  const items = entries.map(entry => ({
+  const picked = entries.find(e => e.id === entryId);
+  if(picked && picked.kind === 'pdf'){
+    const pageItems = picked.pages.map((pg, i) => ({
+      getUrl: async () => pg.finalUrl || pg.naturalUrl,
+      caption: `📑 ${picked.day}.${picked.seq} · ${picked.title.trim() || 'Tanpa judul'} · halaman ${i + 1} dari ${picked.pages.length}`
+    }));
+    openPreviewList(pageItems, 0);
+    return;
+  }
+  const items = entries.filter(e => e.kind !== 'pdf').map(entry => ({
     id: entry.id,
     getUrl: async () => entry.url,
     get caption(){
@@ -2452,9 +2875,35 @@ function openPreview(entryId){
   }));
   openPreviewList(items, items.findIndex(i => i.id === entryId));
 }
+// Membuka satu baris di tabel folder: PDF dibuka di tab baru, gambar lewat pratinjau besar
+async function openFolderItem(idx){
+  const rec = folderFilesCache[idx];
+  if(!rec) return;
+  if((rec.ext || '').toLowerCase() === 'pdf'){
+    // Jendela dibuka SINKRON (sebelum await) supaya tidak diblokir sebagai popup oleh browser —
+    // kalau window.open dipanggil setelah await, browser menganggap itu bukan respons langsung ke klik pengguna.
+    const win = window.open('', '_blank');
+    try{
+      const blob = await storage.read(rec);
+      const url = URL.createObjectURL(blob);
+      if(win){
+        win.location = url;
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } else {
+        alert('Popup diblokir browser. Izinkan popup untuk situs ini, lalu coba lagi.');
+      }
+    } catch(err){
+      if(win) win.close();
+      alert('Tidak bisa membuka PDF: ' + ((err && err.message) || err));
+    }
+    return;
+  }
+  openFolderPreview(idx);
+}
+
 // File yang sudah tersimpan di lokasi unduhan (mengikuti filter tanggal yang aktif)
 function openFolderPreview(idx){
-  const rows = visibleFolderRows();
+  const rows = visibleFolderRows().filter(({ f }) => (f.ext || '').toLowerCase() !== 'pdf');
   const items = rows.map(({ f, idx: i }) => ({
     idx: i,
     getUrl: () => loadThumbFor(folderFilesCache[i]),
@@ -2770,6 +3219,7 @@ window.addEventListener('afterprint', () => { guideOpened.forEach(d => { d.open 
 
 if(!IS_AUTH_POPUP){
   renderItems();
+  initCaptureMode();
   initStorage();
   initVisitCounter();
 }
