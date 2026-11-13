@@ -751,7 +751,7 @@
 <body>
 
 <nav class="floating-nav" id="floatingNav" aria-label="Navigasi cepat panel">
-  <div class="fnav-title">Menu</div>
+  <div class="fnav-title">Panel</div>
   <button type="button" class="fnav-btn active" data-target="panelTanggal" title="Panel 1: Tanggal Kegiatan">
     <span class="fnav-icon">📅</span>
     <span class="fnav-label">Tanggal</span>
@@ -849,6 +849,7 @@
     <div class="folder-row">
       <input type="text" id="cloudFolderName" class="cloud-folder" placeholder="Nama folder di cloud" maxlength="80" aria-label="Nama folder di cloud" style="display:none;">
       <button class="btn btn-ghost" id="btnChooseFolder">📂 Atur Folder Unduhan</button>
+      <button class="btn btn-ghost" id="btnPickNewFolder" style="display:none;">📂 Pilih Folder Baru</button>
       <span class="folder-label" id="folderLabel">Belum diatur — unduhan akan memakai folder default browser (biasanya langsung tanpa dialog)</span>
       <button class="btn btn-danger" id="btnClearFolder" style="display:none;">Lepas Folder</button>
     </div>
@@ -1256,6 +1257,7 @@ const liveVideo = document.getElementById('liveVideo');
 const btnGrab = document.getElementById('btnGrab');
 const btnStopCapture = document.getElementById('btnStopCapture');
 const btnChooseFolder = document.getElementById('btnChooseFolder');
+const btnPickNewFolder = document.getElementById('btnPickNewFolder');
 const btnClearFolder = document.getElementById('btnClearFolder');
 const folderLabel = document.getElementById('folderLabel');
 const folderFilesSection = document.getElementById('folderFilesSection');
@@ -1819,15 +1821,22 @@ function makeLocalProvider(dirHandle){
     async connect(){ await this.ensureAccess(); },
     async list(){
       const out = [];
-      for await (const [name, h] of dirHandle.entries()){
-        if(h.kind !== 'file') continue;
-        let size = null, actualFormat = 'unknown';
-        try{
-          const f = await h.getFile();
-          size = f.size;
-          actualFormat = await detectActualFormat(f);
-        } catch(e){ /* abaikan */ }
-        out.push({ name, size, ref: h, actualFormat });
+      try{
+        for await (const [name, h] of dirHandle.entries()){
+          if(!h || h.kind !== 'file') continue;
+          let size = null, actualFormat = 'unknown';
+          try{
+            const f = await h.getFile();
+            size = f.size;
+            actualFormat = await detectActualFormat(f);
+          } catch(e){
+            console.warn(`Gagal membaca berkas individual "${name}":`, e);
+          }
+          out.push({ name, size, ref: h, actualFormat });
+        }
+      } catch(dirErr){
+        console.error('Gagal membaca direktori:', dirErr);
+        throw new Error('Direktori tidak dapat dibaca (mungkin sudah dipindahkan, diubah namanya, atau izin dicabut).');
       }
       return out;
     },
@@ -2068,23 +2077,40 @@ async function useLocalDirHandle(handle, opts = {}){
   updateFolderLabel();
 }
 
-async function chooseLocalFolder(){
-  if(pendingStorage && pendingStorage.id === 'local'){
+async function chooseLocalFolder(forcePicker = false){
+  if(!forcePicker && pendingStorage && pendingStorage.id === 'local'){
     try{
       await pendingStorage.ensureAccess();
       storage = pendingStorage; pendingStorage = null;
       updateFolderLabel();
       return;
-    } catch(err){ /* lanjut ke pemilihan folder baru */ }
+    } catch(err){
+      console.warn('Folder tersimpan tidak bisa diakses:', err);
+      try{ await idbDel(FOLDER_KEY); await idbDel(CFG_KEY); } catch(e){}
+      pendingStorage = null;
+      await esaAlert('Folder tersimpan sebelumnya tidak dapat diakses (mungkin sudah dipindahkan, diubah namanya, atau izin dicabut). Silakan pilih folder unduhan baru.', 'Akses Folder Tersimpan Gagal', '⚠️');
+      // Otomatis lanjut ke pemilihan folder baru
+    }
   }
   if(!window.showDirectoryPicker){
-    alert('Browser ini tidak mendukung pemilihan folder otomatis (fitur ini butuh Chrome/Edge terbaru). File akan tetap terunduh ke folder Downloads default browser.');
+    await esaAlert('Browser ini tidak mendukung pemilihan folder otomatis (fitur ini butuh Google Chrome atau Microsoft Edge terbaru). File akan tetap terunduh ke folder Downloads default browser.', 'Browser Tidak Mendukung', '⚠️');
     return;
   }
-  const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-  await makeLocalProvider(handle).ensureAccess();
-  await useLocalDirHandle(handle);
+  try{
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await makeLocalProvider(handle).ensureAccess();
+    await useLocalDirHandle(handle);
+  } catch(err){
+    if(err && err.name === 'AbortError') return; // pemilihan folder dibatalkan
+    console.error('Gagal memilih folder:', err);
+    if(err && (err.name === 'SecurityError' || String(err).includes('SecurityError'))){
+      await esaAlert('Lokasi folder yang dipilih dibatasi oleh kebijakan keamanan browser (misalnya folder sistem atau folder Downloads bawaan). Silakan buat dan pilih folder di partisi lain seperti D:\\ atau folder dokumen khusus.', 'Lokasi Folder Dibatasi', '⛔');
+    } else {
+      await esaAlert('Gagal mengakses folder yang dipilih: ' + ((err && err.message) || String(err)), 'Gagal Membuka Folder', '❌');
+    }
+  }
 }
+window.chooseLocalFolder = chooseLocalFolder;
 
 async function connectCloud(type){
   const label = type === 'gdrive' ? 'Google Drive' : 'OneDrive';
@@ -2119,6 +2145,21 @@ btnChooseFolder.addEventListener('click', async () => {
     alert((err && err.message) || String(err));
   }
 });
+
+if(btnPickNewFolder){
+  btnPickNewFolder.addEventListener('click', async () => {
+    try{
+      pendingStorage = null;
+      try{ await idbDel(FOLDER_KEY); await idbDel(CFG_KEY); } catch(e){}
+      await chooseLocalFolder(true);
+    } catch(err){
+      renderStorageUI();
+      if(err && err.name === 'AbortError') return;
+      console.error(err);
+      esaAlert((err && err.message) || String(err), 'Gagal Memilih Folder', '❌');
+    }
+  });
+}
 
 btnClearFolder.addEventListener('click', async () => {
   storage = null;
@@ -2171,8 +2212,13 @@ function renderStorageUI(){
   const pendingHere = pendingStorage && pendingStorage.id === storageTab;
   if(storageTab === 'local'){
     btnChooseFolder.textContent = pendingHere ? '🔓 Aktifkan Folder Tersimpan' : (activeHere ? '📂 Ganti Folder' : '📂 Atur Folder Unduhan');
+    if(btnPickNewFolder){
+      btnPickNewFolder.style.display = pendingHere ? 'inline-flex' : 'none';
+      btnPickNewFolder.textContent = '📂 Pilih Folder Baru';
+    }
   } else {
     btnChooseFolder.textContent = pendingHere ? '🔓 Masuk & Aktifkan' : (activeHere ? '🔗 Hubungkan Ulang' : '🔗 Hubungkan');
+    if(btnPickNewFolder) btnPickNewFolder.style.display = 'none';
   }
 
   if(storage){
@@ -2181,7 +2227,7 @@ function renderStorageUI(){
     btnClearFolder.style.display = 'inline-flex';
     folderFilesSection.style.display = 'block';
   } else if(pendingStorage){
-    folderLabel.textContent = `${storageDescribe(pendingStorage)} (tersimpan — klik "${pendingStorage.id === 'local' ? 'Aktifkan' : 'Masuk'}" untuk melanjutkan)`;
+    folderLabel.textContent = `${storageDescribe(pendingStorage)} (tersimpan — klik "${pendingStorage.id === 'local' ? 'Aktifkan' : 'Masuk'}" untuk melanjutkan, atau klik "Pilih Folder Baru")`;
     folderLabel.className = 'folder-label pending';
     btnClearFolder.style.display = 'inline-flex';
     folderFilesSection.style.display = 'none';
@@ -2216,10 +2262,18 @@ async function initStorage(){
       const handle = await idbGet(FOLDER_KEY);
       if(handle){
         const p = makeLocalProvider(handle);
-        const perm = await handle.queryPermission({ mode: 'readwrite' });
-        if(perm === 'granted') storage = p; else pendingStorage = p;
+        try{
+          const perm = await handle.queryPermission({ mode: 'readwrite' });
+          if(perm === 'granted') storage = p; else pendingStorage = p;
+        } catch(permErr){
+          console.warn('Izin folder usang tidak valid, membersihkan cache:', permErr);
+          try{ await idbDel(FOLDER_KEY); await idbDel(CFG_KEY); } catch(e){}
+          pendingStorage = null;
+        }
       }
-    } catch(err){ /* folder lama tidak valid / DB kosong */ }
+    } catch(err){
+      try{ await idbDel(FOLDER_KEY); await idbDel(CFG_KEY); } catch(e){}
+    }
   }
   updateFolderLabel();
 }
@@ -2373,7 +2427,19 @@ async function refreshFolderFiles(){
     if(mySeq !== refreshSeq) return;
     console.error(err);
     folderFilesCount.textContent = 'Isi folder';
-    fileList.innerHTML = `<div class="file-empty">Tidak bisa membaca isi folder (${(err && err.message) || 'izin dicabut atau folder dipindah'}).</div>`;
+    fileList.innerHTML = `
+      <div class="file-empty" style="padding:24px 16px;text-align:center;">
+        <div style="font-size:26px;margin-bottom:8px;">⚠️</div>
+        <div style="font-weight:600;font-size:14px;margin-bottom:6px;color:var(--text-primary,#e2e8f0);">Tidak bisa membaca isi folder</div>
+        <div style="font-size:13px;color:var(--text-secondary,#94a3b8);max-width:520px;margin:0 auto 16px;line-height:1.5;">
+          ${(err && err.message) || 'Izin akses dicabut, folder dipindahkan, atau folder telah dihapus di Windows Explorer.'}
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button type="button" class="btn btn-ghost" style="padding:7px 16px;font-size:13px;" onclick="chooseLocalFolder(true)">📂 Pilih Folder Baru</button>
+          <button type="button" class="btn btn-danger" style="padding:7px 16px;font-size:13px;" onclick="btnClearFolder.click()">🗑️ Lepas Folder Ini</button>
+        </div>
+      </div>
+    `;
   }
 }
 btnRefreshFolder.addEventListener('click', refreshFolderFiles);
