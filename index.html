@@ -625,7 +625,7 @@
   .brand-badge{
     font-size:11px;font-weight:700;color:var(--violet-2);
     background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.28);
-    border-radius:999px;padding:3px 9px;letter-spacing:0.04em;text-transform:uppercase;
+    border-radius:999px;padding:3px 9px;letter-spacing:0.04em;
   }
   .brand-subtitle{font-size:13px;color:var(--text-dim);margin:0;}
   .header-actions{display:flex;align-items:center;gap:10px;}
@@ -696,9 +696,85 @@
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px;}
   .modal-actions .btn{min-height:38px;padding:8px 16px;font-size:13px;}
 
+
+  /* --- Floating Navigation Menu (Left) --- */
+  .floating-nav{
+    position:fixed;left:18px;top:50%;transform:translateY(-50%);z-index:95;
+    background:linear-gradient(180deg, rgba(31,22,61,0.92) 0%, rgba(23,15,43,0.96) 100%);
+    border:1px solid rgba(139,92,246,0.35);backdrop-filter:blur(12px);
+    border-radius:16px;padding:10px 8px;display:flex;flex-direction:column;gap:6px;
+    box-shadow:0 18px 45px rgba(0,0,0,0.5);transition:all .25s ease;
+  }
+  .fnav-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);text-align:center;padding:4px 6px 2px;}
+  .fnav-btn{
+    background:transparent;border:1px solid transparent;border-radius:10px;padding:8px 11px;
+    display:flex;align-items:center;gap:10px;color:var(--text-dim);font-size:12.5px;font-weight:600;
+    font-family:'Inter',sans-serif;text-decoration:none;cursor:pointer;
+    transition:all .18s cubic-bezier(0.16,1,0.3,1);white-space:nowrap;
+  }
+  .fnav-btn:hover{background:rgba(139,92,246,0.16);border-color:rgba(139,92,246,0.3);color:var(--text);transform:translateX(3px);}
+  .fnav-btn.active{
+    background:linear-gradient(135deg, rgba(124,58,237,0.4), rgba(91,33,182,0.5));
+    border-color:var(--violet);color:#ffffff;box-shadow:0 4px 14px rgba(124,58,237,0.3);
+  }
+  .fnav-icon{font-size:15px;line-height:1;}
+  .fnav-label{line-height:1;}
+  .fnav-sep{height:1px;background:var(--line);margin:4px 2px;}
+
+  @keyframes panelGlow{
+    0%{box-shadow:0 0 0 4px rgba(139,92,246,0.55);border-color:var(--violet);}
+    100%{box-shadow:none;}
+  }
+  .panel.panel-highlight{animation:panelGlow 1.2s ease-out;}
+
+  /* Responsive floating nav */
+  @media (max-width:1380px){
+    .floating-nav .fnav-label, .floating-nav .fnav-title{display:none;}
+    .floating-nav{left:10px;padding:8px 6px;border-radius:12px;}
+    .fnav-btn{padding:8px;justify-content:center;}
+  }
+  @media (max-width:768px){
+    .floating-nav{
+      left:50%;top:auto;bottom:14px;transform:translateX(-50%);
+      flex-direction:row;border-radius:999px;padding:6px 12px;gap:4px;
+    }
+    .floating-nav .fnav-sep{width:1px;height:20px;margin:2px 4px;}
+    .floating-nav .fnav-btn:hover{transform:translateY(-2px);}
+  }
+  body.view-guide .floating-nav{display:none;}
+
+  .time-row.time-warn{border-color:rgba(248,113,113,0.5);background:rgba(248,113,113,0.06);}
+  .time-warn-msg{display:none;font-size:12px;color:var(--bad);font-weight:600;margin:4px 0 2px;}
+
 </style>
 </head>
 <body>
+
+<nav class="floating-nav" id="floatingNav" aria-label="Navigasi cepat panel">
+  <div class="fnav-title">Menu</div>
+  <button type="button" class="fnav-btn active" data-target="panelTanggal" title="Panel 1: Tanggal Kegiatan">
+    <span class="fnav-icon">📅</span>
+    <span class="fnav-label">Tanggal</span>
+  </button>
+  <button type="button" class="fnav-btn" data-target="panelLokasi" title="Panel 2: Lokasi Unduhan">
+    <span class="fnav-icon">📂</span>
+    <span class="fnav-label">Lokasi</span>
+  </button>
+  <button type="button" class="fnav-btn" data-target="panelAmbil" title="Panel 3: Ambil Bukti">
+    <span class="fnav-icon">📸</span>
+    <span class="fnav-label">Ambil</span>
+  </button>
+  <button type="button" class="fnav-btn" data-target="panelDaftar" title="Panel 4: Daftar Bukti Dukung">
+    <span class="fnav-icon">📑</span>
+    <span class="fnav-label">Bukti</span>
+  </button>
+  <div class="fnav-sep"></div>
+  <a class="fnav-btn" href="#panduan" title="Tata Cara Penggunaan ESA">
+    <span class="fnav-icon">📖</span>
+    <span class="fnav-label">Panduan</span>
+  </a>
+</nav>
+
 <div class="wrap">
 
   <header>
@@ -725,7 +801,7 @@
         <div class="brand-text">
           <div class="brand-title-row">
             <h1>ESA</h1>
-            <span class="brand-badge">E-Kinerja Screenshoot Assistant</span>
+            <span class="brand-badge">E-Kinerja Screenshot Assistant</span>
           </div>
           <p class="brand-subtitle">Tangkap, rapikan, dan siapkan bukti dukung kegiatan ASN otomatis &le; 500 KB</p>
         </div>
@@ -738,7 +814,7 @@
     <div class="visit-stats" id="visitStats"></div>
   </header>
 
-  <div class="panel">
+  <div class="panel" id="panelTanggal">
     <div class="panel-title"><span class="n">1</span>Tanggal Kegiatan</div>
     <div class="date-panel-body">
       <div class="date-grid">
@@ -763,7 +839,7 @@
     <!-- <p class="hint">Nomor ini otomatis dihitung dari nomor tertinggi yang sudah ada di folder unduhan + sesi berjalan untuk tanggal ini — jadi tetap aman meski ada kegiatan yang belum sempat di-screenshot (misal 25.1 masih kosong tapi 25.2 sudah ada). Nomor tiap item tetap bisa kamu ubah manual di kartu masing-masing.</p> -->
   </div>
 
-  <div class="panel">
+  <div class="panel" id="panelLokasi">
     <div class="panel-title"><span class="n">2</span>Lokasi Unduhan</div>
     <!-- <div class="storage-tabs" role="tablist" aria-label="Pilih lokasi penyimpanan">
       <button type="button" class="stab active" data-tab="local" role="tab" aria-selected="true">💻 Drive Lokal</button>
@@ -802,7 +878,7 @@
     </div>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="panelAmbil">
     <div class="panel-title"><span class="n">3</span>Ambil Bukti</div>
     <div class="mode-label" id="modeLabel">Pilih jenis bukti sebelum mulai mengambil screenshot:</div>
     <div class="mode-switch" role="radiogroup" aria-labelledby="modeLabel">
@@ -844,7 +920,7 @@
     <p class="hint">Catatan: "Ambil dari Layar" memakai izin berbagi layar browser — di beberapa tempat preview mungkin dibatasi. Kalau gagal atau ditolak, gunakan Tempel (Ctrl+V) atau Upload sebagai cara paling stabil.</p>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="panelDaftar">
     <div class="panel-title"><span class="n">4</span>Daftar Bukti Dukung (<b id="itemCount">0</b>)</div>
     <div class="grid" id="itemsGrid">
       <div class="empty" id="emptyState">Belum ada bukti dukung. Tempel, upload, atau ambil screenshot di atas.</div>
@@ -1308,14 +1384,72 @@ function pointLabel(start, end){
   if(!start || !end) return '—';
   return fmtPoint(durationMinutes(start, end));
 }
+// --- Validasi Jam & Menit ---
+function validateEntryTime(entry){
+  const parse = v => (v === '' || v === undefined || v === null) ? null : Number(v);
+  const sh = parse(entry.startH);
+  const sm = parse(entry.startM);
+  const eh = parse(entry.endH);
+  const em = parse(entry.endM);
+
+  if(sh !== null && (isNaN(sh) || sh < 0 || sh > 23)){
+    return { valid: false, message: 'Jam mulai tidak valid (maksimal jam 23:00).' };
+  }
+  if(sm !== null && (isNaN(sm) || sm < 0 || sm > 59)){
+    return { valid: false, message: 'Menit mulai tidak valid (maksimal menit 59).' };
+  }
+  if(eh !== null && (isNaN(eh) || eh < 0 || eh > 23)){
+    return { valid: false, message: 'Jam selesai tidak valid (maksimal jam 23:00).' };
+  }
+  if(em !== null && (isNaN(em) || em < 0 || em > 59)){
+    return { valid: false, message: 'Menit selesai tidak valid (maksimal menit 59).' };
+  }
+
+  if(entry.startTime && entry.endTime){
+    const sMins = minutesOf(entry.startTime);
+    const eMins = minutesOf(entry.endTime);
+    if(sMins !== null && eMins !== null && eMins <= sMins){
+      return { valid: false, message: 'Jam selesai harus lebih akhir dari jam mulai.' };
+    }
+  }
+
+  return { valid: true, message: '' };
+}
+
 function updateTimeWarnUI(entry, fromInput){
-  const row = fromInput.closest('.time-row');
-  if(!row) return;
-  const warn = entry.startTime && entry.endTime && entry.endTime <= entry.startTime;
-  row.classList.toggle('time-warn', !!warn);
-  const tag = row.querySelector('.duration-tag');
+  const card = fromInput.closest('.item');
+  if(!card) return;
+  const row = card.querySelector('.time-row');
+  const warnMsg = card.querySelector('.time-warn-msg');
+  const btnDownload = card.querySelector('.btnDownloadOne');
+
+  const check = validateEntryTime(entry);
+
+  if(!check.valid){
+    if(row) row.classList.add('time-warn');
+    if(warnMsg){
+      warnMsg.textContent = check.message;
+      warnMsg.style.display = 'block';
+    }
+    if(btnDownload){
+      btnDownload.disabled = true;
+      btnDownload.title = check.message;
+    }
+  } else {
+    if(row) row.classList.remove('time-warn');
+    if(warnMsg){
+      warnMsg.textContent = '';
+      warnMsg.style.display = 'none';
+    }
+    if(btnDownload){
+      btnDownload.disabled = false;
+      btnDownload.title = '';
+    }
+  }
+
+  const tag = card.querySelector('.duration-tag');
   if(tag) tag.textContent = durationLabel(entry.startTime, entry.endTime);
-  const ptag = row.querySelector('.point-tag');
+  const ptag = card.querySelector('.point-tag');
   if(ptag) ptag.textContent = pointLabel(entry.startTime, entry.endTime);
 }
 
@@ -1355,7 +1489,11 @@ function renderItems(){
       : entry.sizeBytes <= MAX_BYTES ? 'size-ok' : 'size-warn';
     const sizeLabel = entry.processing ? 'mengompres…' : fmtSize(entry.sizeBytes);
     const savedTag = entry.savedToFolder ? '<span class="saved-tag">✓ tersimpan ke folder</span>' : '';
-    const timeWarn = (entry.startTime && entry.endTime && entry.endTime <= entry.startTime) ? 'time-warn' : '';
+    const timeCheck = validateEntryTime(entry);
+    const timeWarn = !timeCheck.valid ? 'time-warn' : '';
+    const warnDisplay = !timeCheck.valid ? 'style="display:block;"' : 'style="display:none;"';
+    const warnText = timeCheck.message || '';
+    const downloadDisabled = !timeCheck.valid ? 'disabled title="' + escHtml(timeCheck.message) + '"' : '';
 
     el.innerHTML = `
       <div class="thumb" data-id="${entry.id}" role="button" tabindex="0" title="${entry.kind === 'pdf' ? 'Klik untuk melihat semua halaman' : 'Klik untuk memperbesar'}" aria-label="${entry.kind === 'pdf' ? 'Lihat halaman PDF' : 'Perbesar pratinjau bukti'} ${entry.day}.${entry.seq}">
@@ -1398,10 +1536,10 @@ function renderItems(){
             <div class="point-tag">${pointLabel(entry.startTime, entry.endTime)}</div>
             </div>
           </div>
-          <!-- <div class="time-warn-msg" role="status">Periksa jam: jam selesai harus lebih akhir dari jam mulai.</div> -->
+          <div class="time-warn-msg" role="status" ${warnDisplay}>${escHtml(warnText)}</div>
           <input type="text" placeholder="Judul kegiatan…" value="${entry.title.replace(/"/g,'&quot;')}" data-id="${entry.id}" class="titleInput" aria-label="Judul kegiatan">
         <div class="item-actions">
-          <button class="btn btn-ghost btnDownloadOne" data-id="${entry.id}">⬇️ Unduh</button>
+          <button class="btn btn-ghost btnDownloadOne" data-id="${entry.id}" ${downloadDisabled}>⬇️ Unduh</button>
           ${entry.kind === 'pdf'
             ? `<button class="btn btn-ghost btnEditPages" data-id="${entry.id}" title="Kembalikan ke baki untuk menambah, menghapus, mengurutkan, atau menyensor halaman">📑 Ubah halaman</button>`
             : `<button class="btn btn-ghost btnCensor" data-id="${entry.id}" ${entry.processing ? 'disabled' : ''} title="Blur / sensor area sensitif (NIK, nama, nomor, dll.)">🛡️ Sensor</button>`}
@@ -2353,6 +2491,26 @@ function renderFolderTable(){
         endM: row.querySelector('.editEndM').value,
         title: row.querySelector('.editTitle').value
       };
+      const sh = draft.startH ? Number(draft.startH) : null;
+      const sm = draft.startM ? Number(draft.startM) : null;
+      const eh = draft.endH ? Number(draft.endH) : null;
+      const em = draft.endM ? Number(draft.endM) : null;
+      if(sh !== null && (isNaN(sh) || sh < 0 || sh > 23)){
+        await esaAlert('Jam mulai tidak valid (maksimal jam 23:00).', 'Format Jam Tidak Valid', '⚠️');
+        return;
+      }
+      if(sm !== null && (isNaN(sm) || sm < 0 || sm > 59)){
+        await esaAlert('Menit mulai tidak valid (maksimal menit 59).', 'Format Menit Tidak Valid', '⚠️');
+        return;
+      }
+      if(eh !== null && (isNaN(eh) || eh < 0 || eh > 23)){
+        await esaAlert('Jam selesai tidak valid (maksimal jam 23:00).', 'Format Jam Tidak Valid', '⚠️');
+        return;
+      }
+      if(em !== null && (isNaN(em) || em < 0 || em > 59)){
+        await esaAlert('Menit selesai tidak valid (maksimal menit 59).', 'Format Menit Tidak Valid', '⚠️');
+        return;
+      }
       await saveFileEdit(record, draft);
     });
   });
@@ -3418,6 +3576,37 @@ async function censorFolderFile(idx){
     }
   });
 }
+
+// --- Floating Nav Click & ScrollSpy ---
+document.querySelectorAll('.fnav-btn[data-target]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = document.getElementById(btn.dataset.target);
+    if(target){
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.classList.add('panel-highlight');
+      setTimeout(() => target.classList.remove('panel-highlight'), 1200);
+      document.querySelectorAll('.fnav-btn[data-target]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  });
+});
+
+window.addEventListener('scroll', () => {
+  const panelIds = ['panelTanggal', 'panelLokasi', 'panelAmbil', 'panelDaftar'];
+  let current = '';
+  const scrollPos = window.scrollY + 180;
+  for(const id of panelIds){
+    const el = document.getElementById(id);
+    if(el && el.offsetTop <= scrollPos){
+      current = id;
+    }
+  }
+  if(current){
+    document.querySelectorAll('.fnav-btn[data-target]').forEach(b => {
+      b.classList.toggle('active', b.dataset.target === current);
+    });
+  }
+}, { passive: true });
 
 // --- Halaman panduan (dibuka lewat alamat #panduan) ---
 const GUIDE_TITLE = 'Panduan Penggunaan — ESA';
