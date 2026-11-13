@@ -7,8 +7,8 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjYTc4YmZhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U4NzliOSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTUiIGZpbGw9InVybCgjZykiLz4KICA8ZyBzdHJva2U9IiNmNWYyZmYiIHN0cm9rZS13aWR0aD0iNC41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTE1IDIzIFYxNiBIMjIiLz4KICAgIDxwYXRoIGQ9Ik00MiAxNiBINDkgVjIzIi8+CiAgICA8cGF0aCBkPSJNNDkgNDEgVjQ4IEg0MiIvPgogICAgPHBhdGggZD0iTTIyIDQ4IEgxNSBWNDEiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMTAiIGZpbGw9IiNmNWYyZmYiLz4KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI0LjIiIGZpbGw9IiMzYTFmNjYiLz4KPC9zdmc+Cg==">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --bg-0:#0f0a1c;
@@ -38,9 +38,12 @@
     color:var(--text);
     font-family:'Inter',sans-serif;
     min-height:100vh;
-    padding:32px 20px 80px;
+    padding:32px 20px 60px;
   }
-  .wrap{max-width:980px;margin:0 auto;}
+  a[href], button, summary, select, label[for], input[type=checkbox], input[type=radio], [role=button], [role=radio]{cursor:pointer;}
+  button:disabled, input:disabled, select:disabled{cursor:not-allowed;}
+  :focus-visible{outline:2px solid var(--violet-2);outline-offset:2px;}
+  .wrap{max-width:1100px;margin:0 auto;}
   header{margin-bottom:28px;}
   .eyebrow{
     font-size:12px;letter-spacing:.14em;text-transform:uppercase;
@@ -135,23 +138,39 @@
   .btn-danger{background:rgba(248,113,113,0.12);color:var(--bad);border:1px solid rgba(248,113,113,0.3);}
   .btn:disabled{opacity:.4;cursor:not-allowed;}
   .btn-copy{
-    background:transparent;border:1px solid var(--line);color:var(--text-faint);
-    padding:3px 7px;border-radius:6px;font-size:11px;cursor:pointer;
-    font-family:'Inter',sans-serif;
+    background:var(--bg-1);border:1px solid var(--line-control);color:var(--text-dim);
+    min-height:34px;min-width:34px;padding:4px 8px;border-radius:7px;font-size:11.5px;font-weight:600;
+    cursor:pointer;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;justify-content:center;
+    transition:transform .12s ease, background .15s ease, border-color .15s ease, color .15s ease;
   }
-  .btn-copy:hover{border-color:var(--violet);color:var(--violet-2);}
+  .btn-copy:hover{
+    transform:scale(1.06);
+    border-color:var(--violet);color:var(--violet-2);
+  }
+  .btn-copy:active{
+    transform:scale(0.94);
+  }
 
   #dropzone{
-    border:1.5px dashed var(--line);
+    border:1.5px dashed var(--line-control);
     border-radius:12px;
     padding:24px;
     text-align:center;
-    color:var(--text-faint);
+    color:var(--text-dim);
     font-size:13.5px;
     margin-top:14px;
-    transition:border-color .15s ease, background .15s ease;
+    background:rgba(23,15,43,0.55);
+    cursor:pointer;
+    transition:border-color .2s ease, background .2s ease, transform .2s ease, box-shadow .2s ease;
   }
-  #dropzone.drag{border-color:var(--violet);background:rgba(139,92,246,0.06);color:var(--text-dim);}
+  #dropzone:hover{
+    border-color:var(--violet-2);background:rgba(139,92,246,0.10);color:var(--text);transform:translateY(-1px);
+  }
+  #dropzone.drag{
+    border-color:var(--violet-2);background:rgba(139,92,246,0.14);color:var(--text);
+    animation:dropGlow 1.2s infinite ease-in-out;
+  }
+  #dropzone b{color:var(--text);}
   #dropzone b{color:var(--text-dim);}
 
   .capture-live{
@@ -217,7 +236,7 @@
   .file-table{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;}
   .file-head-row, .file-row{
     display:grid;
-    grid-template-columns:46px 52px 78px 78px 92px 48px 1fr 56px 112px;
+    grid-template-columns:46px 52px 76px 76px 90px 48px 1fr 54px 92px;
     gap:8px;align-items:center;
   }
   .file-head-row{
@@ -227,10 +246,25 @@
   .file-row{
     background:var(--bg-1);border:1px solid var(--line);
     border-radius:8px;padding:8px 12px;font-size:12.5px;
+    transition:background .15s ease, border-color .15s ease, transform .12s ease;
+  }
+  .file-row:hover{
+    background:rgba(36,26,66,0.7);
+    border-color:rgba(139,92,246,0.3);
   }
   .file-row .col-no{color:var(--violet-2);font-weight:700;font-family:'Space Grotesk',sans-serif;}
-  .file-row .col-time, .file-row .col-title{display:flex;align-items:center;gap:5px;overflow:hidden;}
-  .file-row .col-time span, .file-row .col-title span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-row .col-time{display:flex;align-items:center;gap:4px;overflow:hidden;}
+  .file-row .col-time span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-row .col-title{
+    display:flex;align-items:center;gap:6px;min-width:0;
+  }
+  .file-row .col-title span{
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    white-space:normal;
+    line-height:1.35;
+  }
+  .file-row .col-title .btn-copy{flex-shrink:0;}
   .file-row .col-ext{color:var(--text-faint);font-size:11px;text-transform:uppercase;}
   .file-row .col-actions{display:flex;gap:4px;justify-content:flex-end;}
   .file-row.mismatch{border-color:rgba(248,113,113,0.4);background:rgba(248,113,113,0.06);}
@@ -403,18 +437,7 @@
     text-align:center;padding:40px 20px;color:var(--text-faint);font-size:14px;
   }
 
-  footer.actions{
-    position:sticky;bottom:16px;
-    display:flex;justify-content:space-between;align-items:center;gap:12px;
-    background:linear-gradient(180deg, var(--panel), var(--panel-2));
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:14px 18px;
-    margin-top:20px;
-    box-shadow:0 12px 30px rgba(0,0,0,0.35);
-  }
-  footer.actions .count{font-size:13px;color:var(--text-dim);}
-  footer.actions .count b{color:var(--text);}
+  /* floating footer removed */
 
   /* --- Editor sensor area sensitif --- */
   .censor-tag{
@@ -463,16 +486,16 @@
     border-radius:999px;padding:6px 14px;transition:border-color .15s ease, color .15s ease;
   }
   .guide-link:hover, .guide-link:focus-visible{border-color:var(--violet);color:#fff;outline:none;}
-  .guide-page{display:none;max-width:860px;margin:0 auto;line-height:1.65;}
-  body.view-guide .wrap, body.view-guide footer.actions{display:none;}
+  .guide-page{display:none;max-width:1100px;margin:0 auto;line-height:1.65;}
+  body.view-guide .wrap{display:none;}
   body.view-guide .guide-page{display:block;}
-  .guide-toolbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+  .guide-toolbar{position:sticky;top:12px;z-index:20;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:22px;padding:10px 12px;border-radius:12px;background:var(--panel);border:1px solid var(--line);}
   .guide-toolbar .btn{text-decoration:none;}
   .guide-title{
     font-family:'Space Grotesk',sans-serif;font-size:clamp(26px,4.2vw,36px);margin:0 0 10px;font-weight:700;letter-spacing:-0.01em;
     background:linear-gradient(135deg, var(--text), var(--violet-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   }
-  .guide-lead{color:var(--text-dim);font-size:15px;max-width:68ch;margin:0 0 18px;}
+  .guide-lead{color:var(--text-dim);font-size:15px;max-width:100%;margin:0 0 18px;line-height:1.6;}
   .guide-flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;}
   .guide-flow .fl{
     display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--text);
@@ -490,7 +513,7 @@
     padding:7px 13px;border-radius:999px;background:var(--bg-1);color:var(--text-dim);border:1px solid var(--line);
   }
   .guide-nav button:hover{border-color:var(--violet-dim);color:var(--text);}
-  .gsec{margin-top:34px;scroll-margin-top:16px;}
+  .gsec{margin-top:34px;scroll-margin-top:76px;}
   .gsec > h2{
     font-family:'Space Grotesk',sans-serif;font-size:21px;margin:0 0 6px;font-weight:700;
     display:flex;align-items:center;gap:10px;
@@ -580,19 +603,136 @@
   }
 
   ::selection{background:rgba(139,92,246,0.35);}
+  @keyframes itemSlideUp{from{opacity:0;transform:translateY(12px) scale(0.99);}to{opacity:1;transform:translateY(0) scale(1);}}
+  @keyframes dropGlow{0%,100%{box-shadow:0 0 0 rgba(139,92,246,0);border-color:var(--violet);}50%{box-shadow:0 0 18px rgba(139,92,246,0.35);border-color:var(--violet-2);}}
+  @keyframes modalPop{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  .lightbox.open{display:flex;animation:fadeIn .2s ease-out;}
+  .lightbox.open img{animation:modalPop .25s cubic-bezier(0.16,1,0.3,1);}
+  .editor.open{display:flex;animation:fadeIn .2s ease-out;}
+  .editor.open .editor-bar, .editor.open .editor-stage{animation:modalPop .25s cubic-bezier(0.16,1,0.3,1);}
+  details.gfaq{border-bottom:1px solid var(--line);transition:background .2s ease, padding .2s ease;}
+  details.gfaq[open]{background:rgba(36,26,66,0.35);border-radius:10px;padding:0 12px;}
+
+  /* --- Header Beautification --- */
+  .header-main{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:12px;}
+  .brand-block{display:flex;align-items:center;gap:14px;}
+  .brand-logo{filter:drop-shadow(0 4px 16px rgba(124,58,237,0.4));transition:transform .2s ease;}
+  .brand-logo:hover{transform:scale(1.05);}
+  .brand-text{display:flex;flex-direction:column;gap:3px;}
+  .brand-title-row{display:flex;align-items:center;gap:10px;}
+  .brand-title-row h1{margin:0;font-size:32px;line-height:1;}
+  .brand-badge{
+    font-size:11px;font-weight:700;color:var(--violet-2);
+    background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.28);
+    border-radius:999px;padding:3px 9px;letter-spacing:0.04em;text-transform:uppercase;
+  }
+  .brand-subtitle{font-size:13px;color:var(--text-dim);margin:0;}
+  .header-actions{display:flex;align-items:center;gap:10px;}
+
+  /* --- Panel 1 Live Clock Card --- */
+  .date-panel-body{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;}
+  .date-panel-body .date-grid{flex:1;min-width:320px;}
+  .live-clock-card{
+    background:linear-gradient(135deg, rgba(36,26,66,0.65), rgba(23,15,43,0.85));
+    border:1px solid rgba(139,92,246,0.25);
+    border-radius:14px;
+    padding:14px 18px;
+    min-width:240px;
+    display:flex;flex-direction:column;gap:5px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.3);
+    transition:border-color .2s ease, transform .2s ease;
+  }
+  .live-clock-card:hover{border-color:var(--violet-2);transform:translateY(-1px);}
+  .lcc-badge{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--violet-2);letter-spacing:0.02em;}
+  .lcc-dot{width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good);animation:clockPulse 1.5s infinite ease-in-out;}
+  @keyframes clockPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.35;transform:scale(0.85);}}
+  .lcc-date{font-size:12.5px;color:var(--text);font-weight:500;}
+  .lcc-tip{font-size:11px;color:var(--text-faint);margin-top:2px;}
+
+  /* --- Table Size Column & Total Inner --- */
+  .file-head-row, .file-row{
+    grid-template-columns:46px 52px 76px 76px 90px 48px 1fr 68px 50px 92px !important;
+  }
+  .file-row .col-size{color:var(--text-dim);font-size:11.5px;font-family:'Space Grotesk',sans-serif;white-space:nowrap;}
+  .folder-total-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;width:100%;}
+  .total-size-chip{background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--text-dim);}
+  .total-size-chip b{color:var(--violet-2);}
+
+  /* --- Shadcn-style Modal Dialog --- */
+  .modal-backdrop{
+    position:fixed;inset:0;z-index:999;
+    background:rgba(5,3,12,0.74);
+    backdrop-filter:blur(8px);
+    display:none;align-items:center;justify-content:center;
+    padding:20px;
+    animation:modalBackdropFade .2s ease-out;
+  }
+  .modal-backdrop.open{display:flex;}
+  @keyframes modalBackdropFade{from{opacity:0;}to{opacity:1;}}
+  @keyframes modalCardPop{from{opacity:0;transform:scale(0.94) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  .modal-card{
+    background:linear-gradient(180deg, #1f163d 0%, #170f2d 100%);
+    border:1px solid rgba(139,92,246,0.32);
+    border-radius:16px;
+    padding:24px;
+    max-width:480px;width:100%;
+    box-shadow:0 24px 60px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06);
+    display:flex;flex-direction:column;gap:18px;
+    animation:modalCardPop .25s cubic-bezier(0.16,1,0.3,1);
+  }
+  .modal-header{display:flex;gap:14px;align-items:flex-start;}
+  .modal-icon-box{
+    width:42px;height:42px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;flex-shrink:0;
+    background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);
+  }
+  .modal-icon-box.danger{background:rgba(248,113,113,0.15);border-color:rgba(248,113,113,0.35);color:var(--bad);}
+  .modal-icon-box.warning{background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.35);color:var(--warn);}
+  .modal-titles{display:flex;flex-direction:column;gap:5px;min-width:0;}
+  .modal-title{font-family:'Space Grotesk',sans-serif;font-size:16.5px;font-weight:700;color:var(--text);margin:0;}
+  .modal-desc{font-size:13.5px;line-height:1.55;color:var(--text-dim);margin:0;word-break:break-word;white-space:pre-line;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px;}
+  .modal-actions .btn{min-height:38px;padding:8px 16px;font-size:13px;}
+
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <header>
-    <div class="header-top">
-      <div class="eyebrow">e-Kinerja · Bukti Dukung</div>
-      <a class="guide-link" href="#panduan" title="Buka tata cara penggunaan ESA">📖 Panduan penggunaan</a>
-    </div>
-    <div class="brand">
-      <h1>ESA</h1>
-      <span class="full-name">E-Kinerja Screenshot Assistant</span>
+    <div class="header-main">
+      <div class="brand-block">
+        <div class="brand-logo">
+          <svg width="42" height="42" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="64" height="64" rx="16" fill="url(#esa-hdr-g)"/>
+            <path d="M15 23 V16 H22" stroke="#f5f2ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M42 16 H49 V23" stroke="#f5f2ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M49 41 V48 H42" stroke="#f5f2ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 48 H15 V41" stroke="#f5f2ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="32" cy="32" r="10" fill="#f5f2ff"/>
+            <circle cx="32" cy="32" r="4.2" fill="#3a1f66"/>
+            <defs>
+              <linearGradient id="esa-hdr-g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#8b5cf6"/>
+                <stop offset="0.55" stop-color="#a78bfa"/>
+                <stop offset="1" stop-color="#e879b9"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <h1>ESA</h1>
+            <span class="brand-badge">E-Kinerja Screenshoot Assistant</span>
+          </div>
+          <p class="brand-subtitle">Tangkap, rapikan, dan siapkan bukti dukung kegiatan ASN otomatis &le; 500 KB</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a class="guide-link" href="#panduan" title="Buka tata cara penggunaan ESA">📖 Panduan penggunaan</a>
+      </div>
     </div>
     <!-- <p class="sub">Tempel, upload, atau ambil screenshot — otomatis dinamai per tanggal, dilengkapi jam kegiatan dan judul, lalu dikompres di bawah 500&nbsp;KB. Semua diproses langsung di browser kamu — berkas hanya disimpan di lokasi yang kamu pilih.</p> -->
     <div class="visit-stats" id="visitStats"></div>
@@ -600,7 +740,8 @@
 
   <div class="panel">
     <div class="panel-title"><span class="n">1</span>Tanggal Kegiatan</div>
-    <div class="date-grid">
+    <div class="date-panel-body">
+      <div class="date-grid">
       <label class="dg-label-date" for="dateInput">Tanggal</label>
       <label class="dg-label-seq" for="seqPreview">Nomor berikutnya (saran)</label>
       <div class="dg-date">
@@ -609,6 +750,15 @@
       </div>
       <output class="seq-preview dg-seq" id="seqPreview">—</output>
       <span class="date-label dg-note" id="dateLabel"></span>
+      </div>
+      <div class="live-clock-card" id="liveClockCard">
+        <div class="lcc-badge">
+          <span class="lcc-dot"></span>
+          <span id="lccTime">--:--:-- WIB</span>
+        </div>
+        <div class="lcc-date" id="lccFullDate">--</div>
+        <div class="lcc-tip">⏱️ Jam &amp; tanggal sistem aktif untuk pencatatan</div>
+      </div>
     </div>
     <!-- <p class="hint">Nomor ini otomatis dihitung dari nomor tertinggi yang sudah ada di folder unduhan + sesi berjalan untuk tanggal ini — jadi tetap aman meski ada kegiatan yang belum sempat di-screenshot (misal 25.1 masih kosong tapi 25.2 sudah ada). Nomor tiap item tetap bisa kamu ubah manual di kartu masing-masing.</p> -->
   </div>
@@ -643,7 +793,7 @@
       <div class="table-scroll">
         <div class="table-inner">
           <div class="file-head-row">
-            <span></span><span>No.</span><span>Mulai</span><span>Selesai</span><span>Durasi</span><span>Poin</span><span>Judul Kegiatan</span><span>Ext</span><span>Aksi</span>
+            <span></span><span>No.</span><span>Mulai</span><span>Selesai</span><span>Durasi</span><span>Poin</span><span>Judul Kegiatan</span><span>Ukuran</span><span>Ext</span><span>Aksi</span>
           </div>
           <div class="file-table" id="fileList"></div>
         </div>
@@ -669,7 +819,7 @@
       <input type="file" id="fileInput" accept="image/*" multiple hidden>
     </div>
 
-    <div id="dropzone">
+    <div id="dropzone" role="button" tabindex="0" aria-label="Pilih atau seret gambar ke sini, atau tekan Ctrl+V untuk menempel screenshot">
       Tekan <b>Ctrl+V</b> di mana saja pada halaman ini untuk menempel screenshot dari clipboard — atau seret file gambar ke sini.
     </div>
 
@@ -695,7 +845,7 @@
   </div>
 
   <div class="panel">
-    <div class="panel-title"><span class="n">4</span>Daftar Bukti Dukung</div>
+    <div class="panel-title"><span class="n">4</span>Daftar Bukti Dukung (<b id="itemCount">0</b>)</div>
     <div class="grid" id="itemsGrid">
       <div class="empty" id="emptyState">Belum ada bukti dukung. Tempel, upload, atau ambil screenshot di atas.</div>
     </div>
@@ -768,8 +918,36 @@
       </div>
     </div>
 
+    
     <div class="gstep">
       <div class="num">2</div>
+      <div>
+        <h3>Pilih Mode Bukti: Tunggal vs Multi Halaman (PDF)</h3>
+        <p>Sebelum mengambil screenshot, tentukan jenis dokumen bukti dukung di panel <b>Ambil Bukti</b>:</p>
+        <div class="gmini">
+          <div>
+            <b>🖼️ Mode Tunggal (Default)</b>
+            1 screenshot = 1 berkas bukti JPEG (otomatis dikompres &le; 500 KB). Cocok untuk sebagian besar kegiatan harian (rapat, disposisi, pengentrian data, foto kegiatan) yang cukup dibuktikan dengan satu tampilan layar.
+          </div>
+          <div>
+            <b>📑 Mode Multi Halaman (PDF)</b>
+            Menggabungkan beberapa screenshot menjadi 1 berkas PDF utuh (tetap &le; 500 KB). Sangat cocok untuk dokumen telaah staf berlembar-lembar, alur form panjang, atau bukti laporan bertahap.
+          </div>
+        </div>
+        <div class="gtip">
+          <b>Cara kerja Baki Halaman PDF:</b> Pada mode Multi Halaman, setiap screenshot yang kamu tempel (Ctrl+V) atau upload akan masuk ke <b>Baki Halaman PDF</b> di bawah. Di baki ini kamu dapat:
+          <ul style="margin:6px 0 0;padding-left:18px;">
+            <li>Mengubah urutan halaman dengan tombol <b>◀</b> dan <b>▶</b>.</li>
+            <li>Menyensor data sensitif per halaman dengan tombol <b>🛡️</b>.</li>
+            <li>Menghapus halaman tertentu dengan tombol <b>✕</b>.</li>
+            <li>Setelah semua halaman terkumpul, klik <b>✅ Selesai — Buat PDF</b>. ESA akan mengompres dan menyusun PDF agar &le; 500 KB, lalu memasukkannya ke Daftar Bukti Dukung.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="gstep">
+      <div class="num">3</div>
       <div>
         <h3>Ambil bukti (pilih salah satu cara)</h3>
         <div class="gmini">
@@ -782,7 +960,7 @@
     </div>
 
     <div class="gstep">
-      <div class="num">3</div>
+      <div class="num">4</div>
       <div>
         <h3>Lengkapi jam dan judul kegiatan</h3>
         <ul>
@@ -796,7 +974,7 @@
     </div>
 
     <div class="gstep">
-      <div class="num">4</div>
+      <div class="num">5</div>
       <div>
         <h3>Sensor data sensitif <span style="font-weight:500;color:var(--text-faint);font-size:13px;">(opsional, tetapi dianjurkan)</span></h3>
         <p>Kalau screenshot memuat NIK, nama pihak lain, nomor rekening, atau data pribadi lain yang tidak perlu terlihat, klik <span class="ui">🛡️ Sensor</span> pada kartunya.</p>
@@ -811,7 +989,7 @@
     </div>
 
     <div class="gstep">
-      <div class="num">5</div>
+      <div class="num">6</div>
       <div>
         <h3>Simpan berkas</h3>
         <p>Klik <span class="ui">⬇️ Unduh</span> pada satu kartu, atau <span class="ui">⬇️ Unduh Semua</span> di bilah bawah untuk semua kartu. Dengan folder terpilih, berkas langsung masuk ke folder itu dan kartu bertanda <b>✓ tersimpan ke folder</b>.</p>
@@ -829,7 +1007,7 @@
     </div>
 
     <div class="gstep">
-      <div class="num">6</div>
+      <div class="num">7</div>
       <div>
         <h3>Unggah ke e-Kinerja</h3>
         <ol>
@@ -929,13 +1107,7 @@
   <div class="guide-end"><a class="btn btn-primary" href="#">Mulai pakai ESA →</a></div>
 </main>
 
-<footer class="actions">
-  <div class="count"><b id="itemCount">0</b> bukti siap diunduh</div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    <button class="btn btn-danger" id="btnClearAll">Hapus Semua</button>
-    <button class="btn btn-primary" id="btnDownloadAll" disabled>⬇️ Unduh Semua</button>
-  </div>
-</footer>
+<!-- floating footer removed -->
 
 <div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="Pratinjau bukti dukung">
   <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Tutup pratinjau">✕</button>
@@ -998,8 +1170,7 @@ const seqPreview = document.getElementById('seqPreview');
 const itemsGrid = document.getElementById('itemsGrid');
 const emptyState = document.getElementById('emptyState');
 const itemCount = document.getElementById('itemCount');
-const btnDownloadAll = document.getElementById('btnDownloadAll');
-const btnClearAll = document.getElementById('btnClearAll');
+/* batch buttons removed */
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
 const btnUpload = document.getElementById('btnUpload');
@@ -1225,9 +1396,10 @@ function renderItems(){
           <div class="field">
             <label>Poin</label>
             <div class="point-tag">${pointLabel(entry.startTime, entry.endTime)}</div>
+            </div>
           </div>
-        </div>
-        <input type="text" placeholder="Judul kegiatan…" value="${entry.title.replace(/"/g,'&quot;')}" data-id="${entry.id}" class="titleInput">
+          <!-- <div class="time-warn-msg" role="status">Periksa jam: jam selesai harus lebih akhir dari jam mulai.</div> -->
+          <input type="text" placeholder="Judul kegiatan…" value="${entry.title.replace(/"/g,'&quot;')}" data-id="${entry.id}" class="titleInput" aria-label="Judul kegiatan">
         <div class="item-actions">
           <button class="btn btn-ghost btnDownloadOne" data-id="${entry.id}">⬇️ Unduh</button>
           ${entry.kind === 'pdf'
@@ -1241,8 +1413,7 @@ function renderItems(){
     itemsGrid.appendChild(el);
   });
 
-  itemCount.textContent = entries.length;
-  btnDownloadAll.disabled = entries.length === 0;
+  if(itemCount) itemCount.textContent = entries.length;
 
   itemsGrid.querySelectorAll('.titleInput').forEach(inp => {
     inp.addEventListener('input', e => {
@@ -1262,7 +1433,7 @@ function renderItems(){
   itemsGrid.querySelectorAll('.startH').forEach(inp => {
     inp.addEventListener('input', e => {
       const entry = entries.find(x => x.id === Number(e.target.dataset.id));
-      if(entry){ entry.startH = e.target.value; entry.startTime = combineTime(entry.startH, entry.startM); updateTimeWarnUI(entry, e.target); }
+      if(entry){ entry.startH = e.target.value; entry.startTime = combineTime(entry.startH, entry.startM); updateTimeWarnUI(entry, e.target); if(e.target.value.length >= 2){ const m = e.target.closest('.time-row')?.querySelector('.startM'); if(m){ m.focus(); m.select(); } } }
     });
   });
   itemsGrid.querySelectorAll('.startM').forEach(inp => {
@@ -1274,7 +1445,7 @@ function renderItems(){
   itemsGrid.querySelectorAll('.endH').forEach(inp => {
     inp.addEventListener('input', e => {
       const entry = entries.find(x => x.id === Number(e.target.dataset.id));
-      if(entry){ entry.endH = e.target.value; entry.endTime = combineTime(entry.endH, entry.endM); updateTimeWarnUI(entry, e.target); }
+      if(entry){ entry.endH = e.target.value; entry.endTime = combineTime(entry.endH, entry.endM); updateTimeWarnUI(entry, e.target); if(e.target.value.length >= 2){ const m = e.target.closest('.time-row')?.querySelector('.endM'); if(m){ m.focus(); m.select(); } } }
     });
   });
   itemsGrid.querySelectorAll('.endM').forEach(inp => {
@@ -1311,6 +1482,103 @@ function renderItems(){
     });
   });
 }
+
+
+// --- Shadcn-style Modal Helper ---
+function showModal({ title = 'Perhatian', message = '', icon = 'ℹ️', variant = 'info', confirmText = 'OK', cancelText = null }){
+  return new Promise(resolve => {
+    const dialog = document.getElementById('modalDialog');
+    const titleEl = document.getElementById('modalTitle');
+    const descEl = document.getElementById('modalDesc');
+    const iconEl = document.getElementById('modalIcon');
+    const iconBox = document.getElementById('modalIconBox');
+    const btnConfirm = document.getElementById('modalBtnConfirm');
+    const btnCancel = document.getElementById('modalBtnCancel');
+
+    titleEl.textContent = title;
+    descEl.textContent = message;
+    iconEl.textContent = icon;
+    iconBox.className = 'modal-icon-box ' + (variant || 'info');
+    btnConfirm.textContent = confirmText;
+    btnConfirm.className = variant === 'danger' ? 'btn btn-danger' : 'btn btn-primary';
+
+    if(cancelText){
+      btnCancel.style.display = 'inline-flex';
+      btnCancel.textContent = cancelText;
+    } else {
+      btnCancel.style.display = 'none';
+    }
+
+    dialog.classList.add('open');
+    dialog.setAttribute('aria-hidden', 'false');
+
+    const prevActive = document.activeElement;
+    btnConfirm.focus();
+
+    function cleanup(res){
+      dialog.classList.remove('open');
+      dialog.setAttribute('aria-hidden', 'true');
+      btnConfirm.removeEventListener('click', onConfirm);
+      btnCancel.removeEventListener('click', onCancel);
+      document.removeEventListener('keydown', onKeyDown);
+      dialog.removeEventListener('click', onBackdropClick);
+      if(prevActive && prevActive.focus) prevActive.focus();
+      resolve(res);
+    }
+    function onConfirm(){ cleanup(true); }
+    function onCancel(){ cleanup(false); }
+    function onKeyDown(e){
+      if(e.key === 'Escape'){ e.preventDefault(); cleanup(false); }
+      if(e.key === 'Enter' && e.target === btnCancel){ e.preventDefault(); cleanup(false); }
+    }
+    function onBackdropClick(e){
+      if(e.target === dialog){ cleanup(false); }
+    }
+
+    btnConfirm.addEventListener('click', onConfirm);
+    btnCancel.addEventListener('click', onCancel);
+    document.addEventListener('keydown', onKeyDown);
+    dialog.addEventListener('click', onBackdropClick);
+  });
+}
+
+function esaAlert(message, title = 'Pemberitahuan', icon = 'ℹ️'){
+  return showModal({ title, message, icon, variant: 'info', confirmText: 'OK', cancelText: null });
+}
+
+function esaConfirm(message, title = 'Konfirmasi Tindakan', opts = {}){
+  return showModal({
+    title,
+    message,
+    icon: opts.icon || '⚠️',
+    variant: opts.danger ? 'danger' : 'warning',
+    confirmText: opts.confirmText || 'Lanjutkan',
+    cancelText: opts.cancelText || 'Batal'
+  });
+}
+
+// Override window.alert to use modern modal
+window.alert = esaAlert;
+
+// --- Live Clock Widget in Panel 1 ---
+function updateLiveClock(){
+  const now = new Date();
+  const timeEl = document.getElementById('lccTime');
+  const dateEl = document.getElementById('lccFullDate');
+  if(timeEl){
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    timeEl.textContent = `${h}:${m}:${s} WIB`;
+  }
+  if(dateEl){
+    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    dateEl.textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  }
+}
+setInterval(updateLiveClock, 1000);
+updateLiveClock();
 
 // --- IndexedDB helpers ---
 function idbOpen(){
@@ -2046,12 +2314,12 @@ function renderFolderTable(){
         <span class="col-duration">${durationLabel(f.start, f.end)}</span>
         <span class="col-point">${pointLabel(f.start, f.end)}</span>
         <span class="col-title"><span title="${escHtml(f.title)}">${escHtml(f.title)}</span><button class="btn-copy" data-copy="${escHtml(f.title)}">⧉</button></span>
+        <span class="col-size">${f.size !== null && f.size !== undefined ? fmtSize(f.size) : '—'}</span>
         <span class="col-ext">${f.ext}${f.mismatch ? `<span class="mismatch-badge" title="Nama file .${f.ext} tapi isinya sebenarnya ${f.actualFormat.toUpperCase()}">⚠ ${f.actualFormat.toUpperCase()}</span>` : ''}</span>
         <span class="col-actions">
-          <button class="btn-copy btnPreviewFile" data-idx="${idx}" title="${f.ext.toLowerCase() === 'pdf' ? 'Buka PDF' : 'Perbesar'}">${f.ext.toLowerCase() === 'pdf' ? '📄' : '🔍'}</button>
-          ${f.ext.toLowerCase() === 'pdf' ? '' : `<button class="btn-copy btnCensorFile" data-idx="${idx}" title="Sensor area sensitif">🛡️</button>`}
-          <button class="btn-copy btnEditFile" data-idx="${idx}" title="Edit">✏️</button>
-          <button class="btn-copy btnDeleteFile" data-idx="${idx}" title="Hapus">🗑️</button>
+          ${f.ext.toLowerCase() === 'pdf' ? '' : `<button class="btn-copy btnCensorFile" data-idx="${idx}" title="Sensor area sensitif" aria-label="Sensor area sensitif">🛡️</button>`}
+          <button class="btn-copy btnEditFile" data-idx="${idx}" title="Edit" aria-label="Edit detail file">✏️</button>
+          <button class="btn-copy btnDeleteFile" data-idx="${idx}" title="Hapus" aria-label="Hapus file">🗑️</button>
         </span>
       </div>
     `;
@@ -2103,14 +2371,18 @@ function renderFolderTable(){
   fileList.querySelectorAll('.btnCensorFile').forEach(btn => {
     btn.addEventListener('click', () => censorFolderFile(Number(btn.dataset.idx)));
   });
-  fileList.querySelectorAll('.btnPreviewFile').forEach(btn => {
-    btn.addEventListener('click', () => openFolderItem(Number(btn.dataset.idx)));
-  });
+  /* preview triggered via fthumb */
   observeThumbs();
 
   const totalMinutes = rows.reduce((sum, { f }) => sum + (durationMinutes(f.start, f.end) || 0), 0);
-  const totalLabel = dateFilter ? `Total durasi (Tanggal ${dateFilter})` : 'Total durasi tercatat';
-  folderTotal.innerHTML = `${totalLabel}: <b>${fmtDuration(totalMinutes)}</b> &nbsp;=&nbsp; <b class="total-point">${fmtPoint(totalMinutes)} poin</b>`;
+  const totalBytes = rows.reduce((sum, { f }) => sum + (f.size || 0), 0);
+  const totalLabel = dateFilter ? `Total (Tanggal ${dateFilter})` : 'Total durasi tercatat';
+  folderTotal.innerHTML = `
+    <div class="folder-total-inner">
+      <span>${totalLabel}: <b>${fmtDuration(totalMinutes)}</b> &nbsp;=&nbsp; <b class="total-point">${fmtPoint(totalMinutes)} poin</b></span>
+      <span class="total-size-chip">📦 Total ukuran: <b>${fmtSize(totalBytes)}</b> (${rows.length} file)</span>
+    </div>
+  `;
 }
 
 async function saveFileEdit(record, draft){
@@ -2133,7 +2405,7 @@ async function saveFileEdit(record, draft){
 
   const conflict = folderFilesCache.find(f => f.name !== record.name && f.name === newName);
   if(conflict){
-    const ok = confirm(`Nama file baru ("${newName}") akan menimpa file lain yang sudah ada dengan nomor yang sama. Lanjutkan?`);
+    const ok = await esaConfirm(`Nama file baru ("${newName}") akan menimpa file lain yang sudah ada dengan nomor yang sama. Lanjutkan?`, 'Konfirmasi Timpa File', { confirmText: 'Timpa File', icon: '⚠️' });
     if(!ok) return;
   }
 
@@ -2149,7 +2421,7 @@ async function saveFileEdit(record, draft){
 }
 
 async function deleteFile(record){
-  const ok = confirm(`Hapus file "${record.name}" dari folder? Tindakan ini tidak bisa dibatalkan.`);
+  const ok = await esaConfirm(`Hapus file "${record.name}" dari folder? Tindakan ini tidak bisa dibatalkan.`, 'Hapus File', { confirmText: 'Hapus', danger: true, icon: '🗑️' });
   if(!ok) return;
   try{
     await storage.remove(record);
@@ -2163,7 +2435,7 @@ async function deleteFile(record){
 async function fixMismatchedFiles(){
   const targets = folderFilesCache.filter(f => f.mismatch);
   if(!targets.length) return;
-  const ok = confirm(`Ditemukan ${targets.length} file bernama .jpg tapi isinya sebenarnya format lain (misal PNG) — ini penyebab file ditolak sistem e-kinerja. Perbaiki semuanya sekarang? File akan ditimpa di tempat yang sama dengan versi JPEG asli, nama file tidak berubah.`);
+  const ok = await esaConfirm(`Ditemukan ${targets.length} file bernama .jpg tapi isinya sebenarnya format lain (misal PNG) — ini penyebab file ditolak sistem e-kinerja. Perbaiki semuanya sekarang? File akan ditimpa di tempat yang sama dengan versi JPEG asli, nama file tidak berubah.`, 'Perbaiki Format File', { confirmText: 'Perbaiki Semua', icon: '🛠️' });
   if(!ok) return;
 
   btnFixMismatch.disabled = true;
@@ -2338,7 +2610,7 @@ async function downloadEntry(entry){
   if(storage){
     const conflict = findFolderConflict(entry);
     if(conflict){
-      const ok = confirm(`Nomor ${entry.day}.${entry.seq} sudah ada di folder ("${conflict.title}"). Timpa file itu dengan bukti ini?`);
+      const ok = await esaConfirm(`Nomor ${entry.day}.${entry.seq} sudah ada di folder ("${conflict.title}"). Timpa file itu dengan bukti ini?`, 'Konfirmasi Timpa File', { confirmText: 'Timpa File', icon: '⚠️' });
       if(!ok) return;
     }
   }
@@ -2385,10 +2657,11 @@ function renderModeUI(){
   dropzone.innerHTML = DROP_HINTS[captureMode];
   if(captureMode === 'multi') renderTray();
 }
-function setCaptureMode(mode, opts = {}){
+async function setCaptureMode(mode, opts = {}){
   if(mode === captureMode){ renderModeUI(); return; }
   if(captureMode === 'multi' && mode === 'single' && trayPages.length && !opts.skipConfirm){
-    if(!confirm(`Ada ${trayPages.length} halaman di baki yang belum dibuat jadi PDF. Pindah ke mode Tunggal akan membuangnya. Lanjutkan?`)) return;
+    const ok = await esaConfirm(`Ada ${trayPages.length} halaman di baki yang belum dibuat jadi PDF. Pindah ke mode Tunggal akan membuangnya. Lanjutkan?`, 'Pindah Mode', { confirmText: 'Pindah Mode', danger: true, icon: '⚠️' });
+    if(!ok) return;
     clearTray();
   }
   captureMode = mode;
@@ -2476,9 +2749,10 @@ trayPagesEl.addEventListener('click', e => {
 trayPagesEl.addEventListener('keydown', e => {
   if((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.act === 'view'){ e.preventDefault(); e.target.click(); }
 });
-btnClearTray.addEventListener('click', () => {
-  if(trayPages.length && !confirm(`Buang ${trayPages.length} halaman di baki?`)) return;
-  clearTray();
+btnClearTray.addEventListener('click', async () => {
+  if(!trayPages.length) return;
+  const ok = await esaConfirm(`Buang ${trayPages.length} halaman di baki?`, 'Kosongkan Baki', { confirmText: 'Kosongkan', danger: true, icon: '🗑️' });
+  if(ok) clearTray();
 });
 function openTrayPreview(idx){
   const n = trayPages.length;
@@ -2582,8 +2856,11 @@ async function buildPdfFromTray(){
 btnBuildPdf.addEventListener('click', buildPdfFromTray);
 
 // Mengembalikan kartu PDF ke baki (tambah / hapus / urutkan / sensor halaman), jam & judul ikut terbawa
-function editPdfPages(entry){
-  if(trayPages.length && !confirm(`Baki masih berisi ${trayPages.length} halaman yang belum dibuat jadi PDF. Halaman itu akan dibuang dan diganti dengan halaman dari PDF ini. Lanjutkan?`)) return;
+async function editPdfPages(entry){
+  if(trayPages.length){
+    const ok = await esaConfirm(`Baki masih berisi ${trayPages.length} halaman yang belum dibuat jadi PDF. Halaman itu akan dibuang dan diganti dengan halaman dari PDF ini. Lanjutkan?`, 'Ganti Isi Baki', { confirmText: 'Ganti Baki', danger: true, icon: '⚠️' });
+    if(!ok) return;
+  }
   trayPages.forEach(releasePage);
   entry.pages.forEach(pg => {
     if(pg.finalUrl){ URL.revokeObjectURL(pg.finalUrl); pg.finalUrl = null; }
@@ -2642,6 +2919,13 @@ document.addEventListener('paste', (e) => {
 });
 
 btnUpload.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('keydown', e => {
+  if(e.key === 'Enter' || e.key === ' '){
+    e.preventDefault();
+    fileInput.click();
+  }
+});
 fileInput.addEventListener('change', (e) => {
   Array.from(e.target.files).forEach(f => addEntry(f));
   fileInput.value = '';
@@ -2684,67 +2968,7 @@ function stopCapture(){
   captureLive.style.display = 'none';
 }
 
-btnClearAll.addEventListener('click', () => {
-  if(entries.length && !confirm('Hapus semua bukti dukung yang sudah diambil?')) return;
-  entries.forEach(releaseEntry);
-  entries = [];
-  renderItems();
-  updateSeqPreview();
-});
-
-btnDownloadAll.addEventListener('click', async () => {
-  if(!entries.length) return;
-
-  if(storage){
-    const usedNames = new Set();
-    const originalLabel = btnDownloadAll.textContent;
-    btnDownloadAll.disabled = true;
-    let savedCount = 0;
-    try{
-      for(let i = 0; i < entries.length; i++){
-        const entry = entries[i];
-        const conflict = findFolderConflict(entry);
-        if(conflict){
-          const ok = confirm(`Nomor ${entry.day}.${entry.seq} sudah ada di folder ("${conflict.title}"). Timpa file itu dengan bukti ini?`);
-          if(!ok) continue;
-        }
-        let filename = buildFilename(entry);
-        let unique = filename, n = 2;
-        while(usedNames.has(unique)){
-          unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).${entryExt(entry)}`;
-          n++;
-        }
-        usedNames.add(unique);
-        btnDownloadAll.textContent = `⏳ Menyimpan ${i + 1}/${entries.length}…`;
-        const ok = await saveBlobToFolder(entry.blob, unique);
-        entry.savedToFolder = ok;
-        if(ok) savedCount++;
-      }
-    } finally {
-      btnDownloadAll.textContent = originalLabel;
-      btnDownloadAll.disabled = entries.length === 0;
-    }
-    renderItems();
-    refreshFolderFiles();
-    alert(`Selesai: ${savedCount} bukti dukung tersimpan ke ${storageDescribe(storage)}.`);
-    return;
-  }
-
-  const zip = new JSZip();
-  const usedNames = new Set();
-  for(const entry of entries){
-    let filename = buildFilename(entry);
-    let unique = filename, n = 2;
-    while(usedNames.has(unique)){
-      unique = `${entry.day}.${entry.seq} - ${fmtTimeForFile(entry.startTime)}-${fmtTimeForFile(entry.endTime)} - ${sanitize(entry.title)} (${n}).${entryExt(entry)}`;
-      n++;
-    }
-    usedNames.add(unique);
-    zip.file(unique, entry.blob);
-  }
-  const content = await zip.generateAsync({ type: 'blob' });
-  await saveBlobToFolder(content, `bukti-dukung-${dateInput.value || 'tanpa-tanggal'}.zip`);
-});
+/* batch buttons removed as requested */
 
 // --- Counter akses ---
 function fmtNum(n){ return Number(n).toLocaleString('id-ID'); }
@@ -3053,9 +3277,12 @@ async function openEditor(opts){
   btnEditorSave.focus();
 }
 
-function closeEditor(force){
+async function closeEditor(force){
   if(!ed) return;
-  if(!force && !ed.saving && (ed.regions.length || ed.usedSource) && !confirm('Buang sensor yang belum diterapkan?')) return;
+  if(!force && !ed.saving && (ed.regions.length || ed.usedSource)){
+    const ok = await esaConfirm('Buang sensor yang belum diterapkan?', 'Tutup Sensor', { confirmText: 'Buang Sensor', danger: true, icon: '⚠️' });
+    if(!ok) return;
+  }
   const back = ed.lastFocus;
   ed = null;
   editor.classList.remove('open');
@@ -3112,7 +3339,8 @@ btnEditorZoom.addEventListener('click', () => {
 });
 btnEditorReset.addEventListener('click', async () => {
   if(!ed || !ed.opts.source) return;
-  if(!confirm('Buang semua sensor sebelumnya dan kembali ke gambar asli? Area yang sudah disensor akan terlihat lagi di editor.')) return;
+  const ok = await esaConfirm('Buang semua sensor sebelumnya dan kembali ke gambar asli? Area yang sudah disensor akan terlihat lagi di editor.', 'Kembalikan Asli', { confirmText: 'Kembalikan', danger: true, icon: '🔄' });
+  if(!ok) return;
   try{
     ed.base = await loadEditorBase(ed.opts.source);
     ed.regions = [];
@@ -3224,5 +3452,22 @@ if(!IS_AUTH_POPUP){
   initVisitCounter();
 }
 </script>
+
+<div class="modal-backdrop" id="modalDialog" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-icon-box" id="modalIconBox"><span id="modalIcon">ℹ️</span></div>
+      <div class="modal-titles">
+        <h3 class="modal-title" id="modalTitle">Pemberitahuan</h3>
+        <p class="modal-desc" id="modalDesc"></p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="modalBtnCancel">Batal</button>
+      <button type="button" class="btn btn-primary" id="modalBtnConfirm">Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

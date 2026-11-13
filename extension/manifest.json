@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "ESA Pamomong Bridge",
+  "version": "1.0.0",
+  "description": "Pengisi semi-otomatis form kegiatan e-Kinerja Pamomong Kota Pekalongan dari data bukti dukung ESA.",
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://kinerja.pekalongankota.go.id/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Buka ESA Pamomong Bridge"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://kinerja.pekalongankota.go.id/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

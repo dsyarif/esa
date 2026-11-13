@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESA Pamomong Bridge</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-text">
+      <div class="eyebrow">E-Kinerja Screenshot Assistant</div>
+      <h1>ESA Pamomong</h1>
+      <p class="subtitle">Pengisi semi-otomatis Form Resume Kegiatan ASN</p>
+    </div>
+    <button type="button" id="btnRefreshTab" class="btn btn-ghost btn-sm">
+      Periksa Modal
+    </button>
+  </header>
+
+  <main class="container">
+    <section class="panel" aria-labelledby="statusHeading">
+      <div class="section-head">
+        <h2 id="statusHeading"><span class="n">1</span> Koneksi Halaman Pamomong</h2>
+        <span id="connBadge" class="badge badge-neutral">Memeriksa</span>
+      </div>
+      <p id="connMessage" class="helper-text">
+        Membaca status tab aktif...
+      </p>
+      <div id="modalAlert" class="alert hidden" role="alert"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="folderHeading">
+      <div class="section-head">
+        <h2 id="folderHeading"><span class="n">2</span> Folder Bukti ESA</h2>
+        <span id="fileCountBadge" class="badge badge-neutral">0 berkas</span>
+      </div>
+
+      <div id="folderStatusBox" class="folder-label">
+        Belum ada folder bukti yang dipilih
+      </div>
+
+      <div class="folder-actions">
+        <button type="button" id="btnChooseFolder" class="btn btn-primary">
+          Atur Folder Bukti
+        </button>
+        <button type="button" id="btnRefreshFolder" class="btn btn-ghost hidden">
+          Muat Ulang
+        </button>
+        <button type="button" id="btnClearFolder" class="btn btn-danger hidden">
+          Lepas
+        </button>
+      </div>
+
+      <input
+        id="folderInput"
+        type="file"
+        webkitdirectory
+        directory
+        multiple
+        class="sr-only"
+      >
+
+      <p class="helper-text folder-hint">
+        Folder diingat otomatis antar-sesi seperti ESA. Format file: <code>12.1 - 08.00-09.30 - Rapat.jpg</code> (otomatis dikompresi jika &gt; 500 KB).
+      </p>
+
+      <div class="grid-two">
+        <div class="field">
+          <label for="monthYearInput">Bulan &amp; Tahun (MM-YYYY)</label>
+          <input
+            id="monthYearInput"
+            type="text"
+            inputmode="numeric"
+            pattern="\d{2}-\d{4}"
+            placeholder="11-2026"
+          >
+        </div>
+        <div class="field">
+          <label for="dayFilterSelect">Filter Tanggal</label>
+          <select id="dayFilterSelect">
+            <option value="all">Semua tanggal</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="defaultsHeading">
+      <div class="section-head">
+        <h2 id="defaultsHeading"><span class="n">3</span> Nilai Bawaan Form (Opsional)</h2>
+        <button type="button" id="btnToggleDefaults" class="btn-link" aria-expanded="true">
+          Sembunyikan
+        </button>
+      </div>
+
+      <div id="defaultsBody" class="defaults-body">
+        <div class="field">
+          <label for="defaultRhk">SKP (RHK) dari Modal</label>
+          <select id="defaultRhk">
+            <option value="">Ikuti pilihan di modal</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="defaultAktivitas">Kegiatan dari Modal</label>
+          <select id="defaultAktivitas">
+            <option value="">Ikuti pilihan di modal</option>
+          </select>
+        </div>
+
+        <div class="grid-two">
+          <div class="field">
+            <label for="defaultLokasi">Lokasi / Tempat</label>
+            <input id="defaultLokasi" type="text" placeholder="Contoh: Ruang Rapat">
+          </div>
+          <div class="field">
+            <label for="defaultPj">Penanggungjawab</label>
+            <input id="defaultPj" type="text" placeholder="Nama pimpinan / PJ">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="list-section" aria-labelledby="listHeading">
+      <div class="section-head">
+        <h2 id="listHeading">Daftar Bukti Siap Isi</h2>
+        <span id="doneCountText" class="helper-text"></span>
+      </div>
+
+      <div id="emptyState" class="empty-state">
+        <p class="empty-title">Belum ada berkas bukti yang dimuat</p>
+        <p class="helper-text">
+          Klik <strong>Atur Folder Bukti</strong> di atas untuk menghubungkan folder bukti dukung ESA.
+        </p>
+      </div>
+
+      <div id="loadingState" class="empty-state hidden" aria-live="polite">
+        <p class="empty-title">Membaca isi folder bukti...</p>
+      </div>
+
+      <ul id="entryList" class="entry-list" aria-live="polite"></ul>
+    </section>
+  </main>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
